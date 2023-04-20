@@ -24,7 +24,14 @@ const getFileExt = (filename)=>{
     console.log('filename:', filename)
     return filename?filename.split('.').pop():filename;
 }
+const checkIsValidDomain = (domain) =>{
+    if(domain.length > config.CUSTOM_DOMAIN_MAXLENGTH) return false;
+    var re = new RegExp(/^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]+$/);
+    return domain.match(re);
+}
+
 const _utils = {
-    genPreviewTag
+    genPreviewTag,
+    checkIsValidDomain
 }
 export default _utils;

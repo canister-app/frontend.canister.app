@@ -30,12 +30,26 @@
               newFolderName: "",
               isLoadingFiles: false,
               previewModal: false,
-              showModalSetting: false
+              showModalSetting: false,
+              customDomain: '',
+              isPublic: false
           }
       },
       methods: {
+          async init(){
+              let _setting = await _api.getSetting();
+          },
+          async btnUpdateSetting() {
+              console.log('setting save')
+              let validDomain = _utils.checkIsValidDomain(this.customDomain);
+              console.log('validDomain: ', validDomain)
+              if(!validDomain) this.toast.error("Invalid domain name, accepted only letter and number!")
+              const toastSetting = this.toast("Saving settings...");
+              this.showModalSetting = false;
+              let _setting = await _api.updateSetting(this.customDomain, this.isPublic);
+              this.toast.success("Setting saved!", { id: toastSetting})
+          },
           btnShowSetting() {
-              console.log('show setting')
               this.showModalSetting = true;
           },
           btnPreview(file){
@@ -57,19 +71,19 @@
               this.newFolderName = "";
           },
           async prepairUpload(e){
-            this.uploadFiles =  Array.from(e.target.files);
-              for (let [idx, file] of this.uploadFiles.entries()) {
-                  const fileInit = await this.getFileInit(file);
+              if(this.uploadFiles.length > 0){
+                  this.uploadFiles = this.uploadFiles.concat(Array.from(e.target.files));//Push file to existed array
+              }else{
+                  this.uploadFiles =  Array.from(e.target.files);
               }
           },
           async uploadFolder() {
               this.isUploading = true;
+              this.uploadFilesStatus = [];
               for (let [idx, file] of this.uploadFiles.entries()) {
                   const fileInit = await this.getFileInit(file);
-                  console.log('fileInit:', fileInit);
                   this.uploadFilesStatus[idx] = 1;
                   const [fileId] = await _api.createFile(fileInit, userId);
-                  console.log("fileId::::" + fileId);
                   let chunk = 1;
                   for (
                       let byteStart = 0;
@@ -82,9 +96,10 @@
                       await _api.putFileChunk(fileId, chunk, sliceToNat, userId);
                   }
                   this.uploadFilesStatus[idx] = 2;
-                  console.log("Success: ", file.webkitRelativePath);
               }
+              this.toast.success(this.uploadFiles.length + " file(s) uploaded successfully!");
               this.isUploading = false;
+              this.getFolder();
           },
           async singleUpload(e){
               const file_list = e.target.files
@@ -103,10 +118,8 @@
                   const sliceToNat = encodeArrayBuffer(fileSliceBuffer);
                   await _api.putFileChunk(fileId, chunk, sliceToNat, userId);
               }
-              console.log("upload file successed");
           },
           selectFolder(path){
-              console.log('real path: ', path);
               this.isLoadingFiles = true;
               let _path = path.replace(/\/\/+/g, '/');
               this.currentPath = _path;
@@ -120,26 +133,32 @@
             return _path;
           },
           addPricipalFolder(path){
-              console.log('check path: ', path);
               return ("/"+this.currentPrincipal+"/"+path).replace(/\/\/+/g, '/');
           },
           updateFolderName(){
            console.log('newFolderName: ', this.newFolderName);
           },
+          async deleteAsset(file){
+              let _path = file.fileId;
+              if(file.isFolder){
+                  _path = this.addPricipalFolder(file.fileId);
+              }
+              const toastId = this.toast("Deleting "+file.isFolder?' folder `'+file.name+'` with subfolders and files':' file'+"`"+file.name+"`");
+              let result = await _api.deleteAsset(_path);
+              this.toast.success(file.isFolder?'Folder: ':'File: ' +this.name+"` has been deleted!", {id: toastId});
+              this.getFolder();
+          },
           async createFolder(){
-              console.log('this.currentPath: ', this.currentPath, this.newFolderName);
               const toastId = this.toast("Creating folder: `"+this.newFolderName+"`");
               let _path = this.addPricipalFolder(this.currentPath + this.newFolderName);
               try{
                   this.showCreateFolderModal = false;
                   let result = await _api.createFolder(_path);
                   this.toast.success('Folder: `'+this.newFolderName+"` created!", {id: toastId});
-                  console.log('result: ', result);
                   this.selectFolder(this.currentPath);
                   this.newFolderName = "";
 
               }catch (e) {
-                  console.log('e: ', e);
                   this.toast.error("Not authorized!", {id: toastId});
               }
 
@@ -162,7 +181,7 @@
                   chunkCount,
                   fileSize: file.size,
                   name: file.name,
-                  path: _currentPath+(this.isUploadFolder?file.webkitRelativePath:file.name),
+                  path: this.generatePath(_currentPath+(this.isUploadFolder?file.webkitRelativePath:file.name), false),
                   mimeType: file.type,
                   parent: this.addPricipalFolder(_currentPath)
 
@@ -187,7 +206,6 @@
                       parent: file.parent
                   }
               });
-              console.log('this.files: ', this.files)
               this.selectedFolder = this.files;
           },
           async getFiles(){
@@ -218,9 +236,6 @@
           '$route.params.folder': {
               handler: function(newPath) {
                   if(newPath.length>0) this.currentPath = this.$route.params.folder.join("/")+"/";
-                  if(newPath != ""){
-                      console.log('xx, home')
-                  }
                   this.getFolder();
               },
               deep: true,
@@ -240,12 +255,7 @@
       mounted() {
           if(this.$route.params.folder.length > 0){
               this.currentPath = this.$route.params.folder.join("/")+"/";
-              console.log('this.$route.params.folder', this.currentPath)
-
-          }else{
-              console.log("rooot")
           }
-          console.log('route:', this.$route.params);
           this.getFolder();
       },
       setup() {
@@ -466,8 +476,8 @@
 
                                         <div class="nk-file-name">
                                             <div class="nk-file-name-text">
-                                                <router-link :to="file.fileId" class="Folder" @click="selectFolder(file.fileId)" v-if="file.isFolder">{{file.name}}</router-link>
-                                                <a href="javascript:void(0)" class="Preview" @click="btnPreview(file)" v-if="!file.isFolder">{{file.name}}</a>
+                                                <router-link :to="file.fileId" class="title" @click="selectFolder(file.fileId)" v-if="file.isFolder">{{file.name}}</router-link>
+                                                <a href="javascript:void(0)" class="title" @click="btnPreview(file)" v-if="!file.isFolder">{{file.name}}</a>
 <!--                                                <div class="nk-file-star asterisk"><a href="#"><em class="asterisk-off icon ni ni-star"></em><em class="asterisk-on icon ni ni-star-fill"></em></a></div>-->
                                             </div>
                                         </div>
@@ -491,7 +501,7 @@
                                                 <li><a href="#file-move" data-bs-toggle="modal"><em class="icon ni ni-forward-arrow"></em><span>Move</span></a></li>
                                                 <li><a href="#" class="file-dl-toast"><em class="icon ni ni-download"></em><span>Download</span></a></li>
                                                 <li><a href="#"><em class="icon ni ni-pen"></em><span>Rename</span></a></li>
-                                                <li><a href="#"><em class="icon ni ni-trash"></em><span>Delete</span></a></li>
+                                                <li><a href="javascript:void(0)" @click="deleteAsset(file)"><em class="icon ni ni-trash"></em><span>Delete</span></a></li>
                                             </ul>
                                         </div>
                                     </div>
@@ -538,12 +548,15 @@
 
                 <div class="nk-upload-form">
                     <h5 class="title mb-3">
-                        Create new Folder:
-                        <p class="to-folder">
-                            <em class="icon ni ni-folder-check"></em>: {{currentPath}}
-                        </p>
+                        Create new folder:
                     </h5>
-                    <input type="text" v-model="newFolderName" @change="updateFolderName" placeholder="Name of new folder" class="form-control input-group-sm">
+                    <div class="input-group">
+                        <div class="input-group-append">
+                            <span class="input-group-text">/{{currentPath}}</span>
+                        </div>
+                        <input type="text" v-model="newFolderName" @change="updateFolderName" placeholder="Name of new folder" class="form-control input-group-sm">
+                    </div>
+
                 </div>
 
                 <div class="nk-modal-action justify-end">
@@ -561,11 +574,11 @@
                                 <h5 class="title mb-3">
                                     Upload {{isUploadFolder?'Folder':'Files'}}
                                     <p class="to-folder">
-                                        <em class="icon ni ni-folder-check"></em>: {{currentPath}}
+                                        <em class="icon ni ni-folder-check"></em>: /{{currentPath}}
                                     </p>
                                 </h5>
                                 <div class="upload-zone-canic small bg-lighter">
-                                    <input type="file" id="1syncFolder" name="fileList" :webkitdirectory="isUploadFolder==true?'webkitdirectory': undefined" :multiple="isUploadFolder==false?'multiple':''" @change="prepairUpload" style="opacity: 0.0; position: absolute; top: 0; left: 0; bottom: 0; right: 0; width: 100%; height:100%;" />
+                                    <input type="file" id="1syncFolder" name="fileList" :webkitdirectory="isUploadFolder==true?'webkitdirectory': undefined" :multiple="isUploadFolder==false?'multiple':''" @change="prepairUpload" style="opacity: 0.0; position: absolute; top: 0; left: 0; bottom: 0; right: 0; width: 100%; height:100%;cursor: pointer;" />
                                     <div class="dz-message" data-dz-message>
                                         <span class="dz-message-text"><span>Drag and drop</span> file here or <span>browse</span></span>
                                     </div>
@@ -627,14 +640,14 @@
                     </div>
                     <div class="row">
                         <div class="col-6">
-                            <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="customCheck1">
-                            <label class="custom-control-label" for="customCheck1">Public</label>
-                        </div>
+                            <div class="custom-control custom-switch me-n2 ">
+                                <input type="checkbox" class="custom-control-input" id="isPublic" v-model="isPublic">
+                                <label class="custom-control-label" for="isPublic"></label>
+                            </div>
                         </div>
                         <div class="col-6">
                             <div class="input-group">
-                                <input type="text" class="form-control" placeholder="domain" required>
+                                <input type="text" class="form-control" placeholder="domain" required v-model="customDomain">
                                 <div class="input-group-append">
                                     <span class="input-group-text" id="basic-addon2">.canic.app</span>
                                 </div>
@@ -646,7 +659,7 @@
                 <div class="nk-modal-action justify-end">
                     <ul class="btn-toolbar g-4 align-center">
                         <li><a href="javascript:void(0)" @click="showModalSetting = false" class="link link-primary">Close</a></li>
-                        <li><button class="btn btn-primary"  @click="showModalSetting" >Save </button></li>
+                        <li><button class="btn btn-primary" @click="btnUpdateSetting">Save </button></li>
                     </ul>
                 </div>
             </VueFinalModal>

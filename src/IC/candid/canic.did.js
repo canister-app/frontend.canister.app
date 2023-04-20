@@ -56,6 +56,7 @@ export const idlFactory = ({ IDL }) => {
     const CanicActor = IDL.Service({
         'createFile' : IDL.Func([FileInit, UserId], [IDL.Opt(FileId)], []),
         'createFolder' : IDL.Func([IDL.Text], [], []),
+        'deleteAsset' : IDL.Func([IDL.Text], [], []),
         'emptyFiles' : IDL.Func([], [], []),
         'generateUUID' : IDL.Func([], [IDL.Text], []),
         'getFileChunk' : IDL.Func(
