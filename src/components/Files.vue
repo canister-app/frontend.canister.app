@@ -2,20 +2,23 @@
   import { Principal } from "@dfinity/principal"
   import { useRoute } from 'vue-router'
   import { ref, watch } from 'vue'
-  import _api from '../IC/api.js'
+  import  * as FileManager from '../IC/api.js'
+  import config from "../config";
   import { VueFinalModal } from 'vue-final-modal'
   import moment from 'moment';
-  import _utils from "../IC/utils";
+  import { genPreviewTag, checkIsValidDomain } from "../IC/utils";
   import { useToast } from "vue-toastification";
-
+  import { walletData } from "../services/store"
+  import LoginModal from "./modals/LoginModal.vue"
   const MAX_CHUNK_SIZE = 1024 * 1024 * 1.5; // 1.5MB
   const userId = Principal.fromText("2vxsx-fae");//Need authen
   const encodeArrayBuffer = (file) => Array.from(new Uint8Array(file));
   export default {
-      components: { VueFinalModal },
+      components: { VueFinalModal, LoginModal },
       data() {
           return {
-              currentPrincipal: "2vxsx-fae",//Init user folder
+              walletData,
+              loginModal: false,
               showUploadModal: false,
               isUploadFolder: true,
               showUploadFilesModal: false,
@@ -37,17 +40,19 @@
       },
       methods: {
           async init(){
-              let _setting = await _api.getSetting();
+              let _setting = await FileManager.getSetting();
           },
           async btnUpdateSetting() {
-              console.log('setting save')
-              let validDomain = _utils.checkIsValidDomain(this.customDomain);
-              console.log('validDomain: ', validDomain)
+              let validDomain = checkIsValidDomain(this.customDomain);
               if(!validDomain) this.toast.error("Invalid domain name, accepted only letter and number!")
               const toastSetting = this.toast("Saving settings...");
               this.showModalSetting = false;
-              let _setting = await _api.updateSetting(this.customDomain, this.isPublic);
-              this.toast.success("Setting saved!", { id: toastSetting})
+              let _setting = await FileManager.updateSetting(this.customDomain, this.isPublic);
+              if(_setting){
+                  this.toast.success("Setting saved!", { id: toastSetting})
+              }else{
+                  this.toast.error("Save failed, please try again later!", { id: toastSetting})
+              }
           },
           btnShowSetting() {
               this.showModalSetting = true;
@@ -57,8 +62,8 @@
               this.previewContent = {};
             this.previewContent = {
                 fileInfo: file,
-                content: _utils.genPreviewTag(file.fileId)
-            };//"<iframe src='http://qoctq-giaaa-aaaaa-aaaea-cai.localhost:8000"+content+"' width=\"100%\" height=\"300\" style=\"border:none;\"></iframe>";
+                content: genPreviewTag(file.fileId)
+            };
           },
           btnShowUpload(type) {
               this.isUploadFolder = type;
@@ -81,88 +86,117 @@
               this.isUploading = true;
               this.uploadFilesStatus = [];
               for (let [idx, file] of this.uploadFiles.entries()) {
-                  const fileInit = await this.getFileInit(file);
-                  this.uploadFilesStatus[idx] = 1;
-                  const [fileId] = await _api.createFile(fileInit, userId);
-                  let chunk = 1;
-                  for (
-                      let byteStart = 0;
-                      byteStart < file.size;
-                      byteStart += MAX_CHUNK_SIZE, chunk += 1
-                  ) {
-                      let fileSlice = file.slice(byteStart, Math.min(file.size, byteStart + MAX_CHUNK_SIZE), file.type);
-                      let fileSliceBuffer = (await fileSlice.arrayBuffer()) || new ArrayBuffer(0);
-                      let sliceToNat = encodeArrayBuffer(fileSliceBuffer);
-                      await _api.putFileChunk(fileId, chunk, sliceToNat, userId);
+                  if(file.size < 1000000){//Less than 1MB
+                      const fileInit = await this.getFileInit(file);
+                      this.uploadFilesStatus[idx] = 1;
+                      const [fileId] = await FileManager.createFile(fileInit);
+                      let chunk = 1;
+                      for (
+                          let byteStart = 0;
+                          byteStart < file.size;
+                          byteStart += MAX_CHUNK_SIZE, chunk += 1
+                      ) {
+                          let fileSlice = file.slice(byteStart, Math.min(file.size, byteStart + MAX_CHUNK_SIZE), file.type);
+                          let fileSliceBuffer = (await fileSlice.arrayBuffer()) || new ArrayBuffer(0);
+                          let sliceToNat = encodeArrayBuffer(fileSliceBuffer);
+                          await FileManager.putFileChunk(fileId, chunk, sliceToNat);
+                      }
+                      this.uploadFilesStatus[idx] = 2;
                   }
-                  this.uploadFilesStatus[idx] = 2;
+
               }
               this.toast.success(this.uploadFiles.length + " file(s) uploaded successfully!");
               this.isUploading = false;
               this.getFolder();
           },
-          async singleUpload(e){
-              const file_list = e.target.files
-              const file = file_list[0];
-              const fileInit = await this.getFileInit(file);
-              const [fileId] = await _api.createFile(fileInit, userId);
-              let chunk = 1;
-
-              for (
-                  let byteStart = 0;
-                  byteStart < file.size;
-                  byteStart += MAX_CHUNK_SIZE, chunk += 1
-              ) {
-                  const fileSlice = file.slice(byteStart, Math.min(file.size, byteStart + MAX_CHUNK_SIZE), file.type);
-                  const fileSliceBuffer = (await fileSlice.arrayBuffer()) || new ArrayBuffer(0);
-                  const sliceToNat = encodeArrayBuffer(fileSliceBuffer);
-                  await _api.putFileChunk(fileId, chunk, sliceToNat, userId);
-              }
-          },
           selectFolder(path){
-              this.isLoadingFiles = true;
               let _path = path.replace(/\/\/+/g, '/');
               this.currentPath = _path;
               this.getFolder();
               this.genBreakcum(_path);
-              this.isLoadingFiles = false;
           },
           generatePath(path, trim){
               let _path = path.replace(/\/\/+/g, '/');
               if(trim) _path = _path.replace(/^\/[^/]+/, "");
             return _path;
           },
+          generateFilePath(path){
+              let _path = path.replace(/\/\/+/g, '/');
+              if( _path.charAt( 0 ) === '/' )
+                  _path = _path.slice(1);
+            return _path;
+          },
           addPricipalFolder(path){
-              return ("/"+this.currentPrincipal+"/"+path).replace(/\/\/+/g, '/');
+              return ("/"+walletData.txtPrincipal+"/"+path).replace(/\/\/+/g, '/');
           },
           updateFolderName(){
-           console.log('newFolderName: ', this.newFolderName);
+
           },
           async deleteAsset(file){
-              let _path = file.fileId;
-              if(file.isFolder){
-                  _path = this.addPricipalFolder(file.fileId);
-              }
-              const toastId = this.toast("Deleting "+file.isFolder?' folder `'+file.name+'` with subfolders and files':' file'+"`"+file.name+"`");
-              let result = await _api.deleteAsset(_path);
-              this.toast.success(file.isFolder?'Folder: ':'File: ' +this.name+"` has been deleted!", {id: toastId});
-              this.getFolder();
+              let _msg = file.isFolder? "folder with subfolders and files?":"file?";
+              window.Swal.fire({
+                  icon: 'question',
+                  text: 'Are you sure you want to delete this '+ _msg,
+                  showCancelButton: true,
+                  confirmButtonText: 'Yes, delete it!',
+              }).then(async (result) => {
+                  if (result.isConfirmed) {
+                      let _path = file.fileId;
+                      if(file.isFolder){
+                          _path = this.addPricipalFolder(file.fileId);
+                      }
+                      const toastId = this.toast("Deleting "+file.isFolder?' folder `'+file.name+'` with subfolders and files':' file'+"`"+file.name+"`");
+                      let result = await FileManager.deleteAsset(_path);
+                      this.toast.success(file.isFolder?'Folder: ':'File: ' +this.name+"` has been deleted!", {id: toastId});
+                      this.getFolder();
+                  }
+              })
+
           },
           async createFolder(){
               const toastId = this.toast("Creating folder: `"+this.newFolderName+"`");
               let _path = this.addPricipalFolder(this.currentPath + this.newFolderName);
               try{
                   this.showCreateFolderModal = false;
-                  let result = await _api.createFolder(_path);
+                  let result = await FileManager.createFolder(_path);
                   this.toast.success('Folder: `'+this.newFolderName+"` created!", {id: toastId});
                   this.selectFolder(this.currentPath);
                   this.newFolderName = "";
-
               }catch (e) {
                   this.toast.error("Not authorized!", {id: toastId});
               }
 
           },
+          async getFolder(directPath){
+              this.isLoadingFiles = true;
+              this.files = [];
+              let _fullPath = this.addPricipalFolder(directPath?directPath:this.currentPath);
+              this.genBreakcum(this.currentPath);
+              try{
+                  const folder = await FileManager.getFolder(_fullPath);//_api.canister(config.CANIC_APP).getFolder(_fullPath);
+                  let _files = folder[0].sort((a,b) => b.isFolder - a.isFolder);
+
+                  this.files = _files.map(file => {
+                      return {
+                          chunkCount: file.chunkCount,
+                          createdAt: moment(Number(file.createdAt)/1000000).format('MM/DD/YYYY, h:mm:ss a'),
+                          fileId: this.generatePath(file.fileId, file.isFolder),
+                          fileSize: file.fileSize>0?Number(file.fileSize)/1000+' KB':'',
+                          isFolder: file.isFolder,
+                          mimeType: file.mimeType,
+                          name: file.name,
+                          parent: file.parent
+                      }
+                  });
+                  this.selectedFolder = this.files;
+                  this.isLoadingFiles = false;
+              }catch (e) {
+                  this.toast.error("Not authorized!");
+                  this.isLoadingFiles = false;
+              }
+
+          },
+
           genBreakcum(paths){
               let _paths = paths.split("/");
               this.navPaths = [];
@@ -181,82 +215,38 @@
                   chunkCount,
                   fileSize: file.size,
                   name: file.name,
-                  path: this.generatePath(_currentPath+(this.isUploadFolder?file.webkitRelativePath:file.name), false),
+                  path: this.generateFilePath(_currentPath+file.name),
                   mimeType: file.type,
                   parent: this.addPricipalFolder(_currentPath)
 
               };
-          },
-          async getFolder(){
-              let _fullPath = this.addPricipalFolder(this.currentPath);
-              this.genBreakcum(this.currentPath);
-              const folder = await _api.getFolder(_fullPath);
-              this.files = [];
-              let _files = folder[0].sort((a,b) => b.isFolder - a.isFolder);
-
-              this.files = _files.map(file => {
-                  return {
-                      chunkCount: file.chunkCount,
-                      createdAt: moment(Number(file.createdAt)/1000000).format('MM/DD/YYYY, h:mm:ss a'),
-                      fileId: this.generatePath(file.fileId, file.isFolder),
-                      fileSize: file.fileSize>0?Number(file.fileSize)/1000+' KB':'',
-                      isFolder: file.isFolder,
-                      mimeType: file.mimeType,
-                      name: file.name,
-                      parent: file.parent
-                  }
-              });
-              this.selectedFolder = this.files;
-          },
-          async getFiles(){
-              const paths = await _api.getFolder("/");
-              this.files = paths[0];
-              this.selectedFolder = this.files;
-
-              // let result = [];
-              // let level = {result};
-              //   console.log('paths: ', paths);
-              // paths[0].forEach((path) => {
-              //     path.fileId.split('/').reduce((r, name, i, a) => {
-              //         console.log('r, name, i, a: ', r[name])
-              //         if(!r[name]) {
-              //             r[name] = {result: []};
-              //             let isFolder = (i == a.length-1) ? false: true;
-              //             r.result.push({name, isFolder: isFolder, children: r[name].result})
-              //         }
-              //         return r[name];
-              //     }, level)
-              // })
-              // this.files = result;
-              // this.selectedFolder =result[0];
-              // console.log('result: ', result);
           }
       },
       watch: {
-          '$route.params.folder': {
-              handler: function(newPath) {
-                  if(newPath.length>0) this.currentPath = this.$route.params.folder.join("/")+"/";
-                  this.getFolder();
-              },
-              deep: true,
-              immediate: true
+          $route(to, from){
+              this.currentPath = to.path;
+              this.getFolder();
           },
-          '$route.params': {
-              handler: function(newPath) {
-                  if(newPath.folder == ''){ //Root folder
-                      this.currentPath = "/";
-                      this.getFolder();
-                  }
-              },
-              deep: true,
-              immediate: true
+          'walletData.isModalVisible'(val){
+              this.loginModal= val;
+          },
+          'walletData.isLogged'(val){
+              this.files = [];//reset before
+              setTimeout(()=>{
+                  this.getFolder();
+              }, 2000)
+          },
+          loginModal: (val, oldVal)=>{
+              walletData.setModalVisible(val);
           }
       },
       mounted() {
           if(this.$route.params.folder.length > 0){
               this.currentPath = this.$route.params.folder.join("/")+"/";
           }
-          this.getFolder();
+          setTimeout(()=>{
+              this.getFolder();
+          }, 2000)
       },
       setup() {
           // Get toast interface
@@ -326,31 +316,31 @@
             </div>
             <div class="nk-fmg-aside-bottom">
                 <div class="nk-fmg-status">
-                    <h6 class="nk-fmg-status-title"><em class="icon ni ni-hard-drive"></em><span>Storage</span></h6>
+                    <h6 class="nk-fmg-status-title"><em class="icon ni ni-hard-drive"></em><span>Canister Storage</span></h6>
                     <div class="progress progress-md bg-light">
                         <div class="progress-bar" data-progress="5"></div>
                     </div>
-                    <div class="nk-fmg-status-info">12.47 GB of 50 GB used</div>
+                    <div class="nk-fmg-status-info">0.47 GB of 4 GB used</div>
                     <div class="nk-fmg-status-action">
-                        <a href="#" class="link link-primary link-sm">Upgrade Storage</a>
+                        <a href="#" class="link link-primary link-sm">Create New Bucket</a>
                     </div>
                 </div>
-                <div class="nk-fmg-switch">
-                    <div class="dropup">
-                        <a href="#" data-bs-toggle="dropdown" data-offset="-10, 12" class="dropdown-toggle dropdown-indicator-unfold">
-                            <div class="lead-text">Personal</div>
-                            <div class="sub-text">Only you</div>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-end">
-                            <ul class="link-list-opt no-bdr">
-                                <li><a href="#"><span>Team Plan</span></a></li>
-                                <li><a class="active" href="#"><span>Personal</span></a></li>
-                                <li class="divider"></li>
-                                <li><a class="link" href="#"><span>Upgrade Plan</span></a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+<!--                <div class="nk-fmg-switch">-->
+<!--                    <div class="dropup">-->
+<!--                        <a href="#" data-bs-toggle="dropdown" data-offset="-10, 12" class="dropdown-toggle dropdown-indicator-unfold">-->
+<!--                            <div class="lead-text">Personal</div>-->
+<!--                            <div class="sub-text">Only you</div>-->
+<!--                        </a>-->
+<!--                        <div class="dropdown-menu dropdown-menu-end">-->
+<!--                            <ul class="link-list-opt no-bdr">-->
+<!--                                <li><a href="#"><span>Team Plan</span></a></li>-->
+<!--                                <li><a class="active" href="#"><span>Personal</span></a></li>-->
+<!--                                <li class="divider"></li>-->
+<!--                                <li><a class="link" href="#"><span>Upgrade Plan</span></a></li>-->
+<!--                            </ul>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
             </div>
         </div>
 
@@ -367,7 +357,9 @@
             <div class="nk-fmg-actions">
                 <ul class="nk-block-tools g-3">
                     <li>
-                        <a href="javascript:void(0)" @click="btnCreateFolder()" class="btn btn-light"><em class="icon ni ni-folder-plus"></em> <span>Folder</span></a></li>
+                    <a href="javascript:void(0)" @click="getFolder()" class="btn btn-light"><em class="icon ni ni-repeat"></em> <span>Refresh</span></a></li>
+                    <li>
+                    <a href="javascript:void(0)" @click="btnCreateFolder()" class="btn btn-light"><em class="icon ni ni-folder-plus"></em> <span>Folder</span></a></li>
 
                     <li>
                         <div class="dropdown">
@@ -509,10 +501,11 @@
                             </div><!-- .nk-file -->
                         </div>
                     </div><!-- .nk-files -->
-                    <div class="files-loading" v-if="files.length==0">
-
-                        <div class="empty-icon">
-
+                    <div class="files-loading" v-if="files.length==0 && isLoadingFiles">
+                        <div v-if="isLoadingFiles == true">
+                            <em class="icon-upload fa fa-spinner fa-spin"></em> Loading...
+                        </div>
+                        <div class="empty-icon" v-else>
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 90">
                                 <rect x="5" y="10" width="70" height="60" rx="7" ry="7" fill="#cccccc" stroke="#cccccc" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></rect>
                                 <rect x="15" y="20" width="70" height="60" rx="7" ry="7" fill="#fff" stroke="#cccccc" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></rect>
@@ -649,7 +642,7 @@
                             <div class="input-group">
                                 <input type="text" class="form-control" placeholder="domain" required v-model="customDomain">
                                 <div class="input-group-append">
-                                    <span class="input-group-text" id="basic-addon2">.canic.app</span>
+                                    <span class="input-group-text" id="customDomain">.canic.app</span>
                                 </div>
                             </div>
                         </div>
@@ -663,6 +656,21 @@
                     </ul>
                 </div>
             </VueFinalModal>
+
+            <VueFinalModal v-model="loginModal" classes="vue-modal-container" content-class="vue-modal-content">
+                <button class="menu-toggler active icon-close modal__close" @click="loginModal = false"><em class="menu-off menu-icon ni ni-cross"></em></button>
+                <h5 class="title mb-3">
+                    Login
+                </h5>
+                <LoginModal />
+
+                <div class="nk-modal-action justify-end">
+                    <ul class="btn-toolbar g-4 align-center">
+                        <li><a href="javascript:void(0)" @click="loginModal = false" class="link link-primary">Close</a></li>
+                    </ul>
+                </div>
+            </VueFinalModal>
+
         </div><!-- .nk-fmg-body-content -->
     </div><!-- .nk-fmg-body -->
 

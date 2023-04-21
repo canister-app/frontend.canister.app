@@ -1,8 +1,178 @@
-<script setup>
+<script>
   import { RouterLink, RouterView } from 'vue-router'
   import HeaderView from './views/layout/HeaderView.vue'
   import FooterView from './views/layout/FooterView.vue'
+  import { walletData } from "@/services/store";
+  import { StoicIdentity } from "ic-stoic-identity";
+  import { AuthClient } from "@dfinity/auth-client";
+  import {principalToAccountIdentifier} from "./IC/utils.js";
+  import config from "./config";
 
+  export default {
+    components: {HeaderView, FooterView},
+    data(){
+      return{
+        walletData,
+        loginModal: false,
+      }
+    },
+    methods: {
+      showLogin(){
+        this.loginModal = true;
+      },
+      logoutAction(){
+        localStorage.removeItem("_w_connected");
+        StoicIdentity.disconnect();
+        walletData.setIdentity(false);
+        walletData.setAccount([]);
+        walletData.setBalance(0);
+        walletData.setLoginState(false);
+        walletData.setCurrentAccount({});
+        walletData.logoutAction();
+      },
+    },
+    created() {
+      //Init
+      var is_connected = localStorage.getItem("_w_connected");
+      const logout = async() => {
+        localStorage.removeItem("_w_connected");
+        StoicIdentity.disconnect();
+        walletData.setIdentity(false);
+        walletData.setAccount([]);
+        walletData.setBalance(0);
+        walletData.setLoginState(false);
+        walletData.setCurrentAccount({});
+      };
+      if (is_connected) {
+        switch (is_connected) {
+          case "stoic":
+            StoicIdentity.load().then(async (identity) => {
+              if (identity !== false) {
+                //ID is a already connected wallet!
+                walletData.setIdentity(identity);
+                identity.accounts().then((accs) => {
+                  let _current_accounts = JSON.parse(accs);
+                  walletData.setAccount(_current_accounts);
+                  if(_current_accounts.length > 0){
+                    _current_accounts.forEach( (account, idx) => {
+                      let _current_account = JSON.parse(localStorage.getItem('_current_account'));
+                      if(_current_account && _current_account.address == account.address){
+                        walletData.setCurrentAccount(account);
+                        localStorage.setItem('_account_index', idx);//Set Account idx
+                        walletData.setCurrentAccountIdx(idx);
+                      }
+                    })
+                  }
+                  // walletData.setCurrentAccount(_current_account[0]);
+                  walletData.getBalance();
+                  // walletData.getStakingBalance();
+                  // walletData.getXcanicBalance();
+                  walletData.getWalletData();
+                  // walletData.updateAccountPrincipal();
+                });
+              } else {
+                console.log("Error from stoic connect");
+                logout();
+              }
+            }).catch(e => {
+            });
+            break;
+          case "plug":
+            (async () => {
+              const connected = await window?.ic?.plug.isConnected();
+              if (connected) {
+                console.log('check 11111111 timee')
+                if (!window.ic.plug.agent) {
+                  await window.ic.plug.createAgent({
+                    whitelist: config.CANISTER_WHITE_LIST,
+                  });
+                }
+                var pid = await window.ic.plug.agent.getPrincipal();
+                var id = {
+                  type: "plug",
+                  getPrincipal : () => pid
+                }
+                walletData.setIdentity(id);
+                walletData.setAccount([
+                  {
+                    name: "Plug Wallet",
+                    address: principalToAccountIdentifier(id.getPrincipal().toText(), 0),
+                  },
+                ]);
+                walletData.setCurrentAccount({ name: "Plug Wallet", address: principalToAccountIdentifier(id.getPrincipal().toText(), 0)});
+                walletData.loginAction('plug');
+              }else {
+                console.log("Plug not connected");
+                logout();
+              }
+            })();
+            break;
+          case "infinity":
+            (async () => {
+              const connected = await window?.ic?.infinityWallet.isConnected();
+              console.log('connected: ', connected);
+              if (connected) {
+                if (!window.ic.infinityWallet.agent) {
+                  await window.ic.infinityWallet.requestConnect({
+                    whitelist: config.CANISTER_WHITE_LIST,
+                  });
+                }
+
+                const pid = await window.ic.infinityWallet.getPrincipal();
+                var id = {
+                  type: "infinity",
+                  getPrincipal : () => pid
+                }
+                walletData.setIdentity(id);
+                walletData.setAccount([
+                  {
+                    name: "Infinity Wallet",
+                    address: principalToAccountIdentifier(id.getPrincipal().toText(), 0),
+                  },
+                ]);
+                walletData.setCurrentAccount({ name: "Infinity Wallet", address: principalToAccountIdentifier(id.getPrincipal().toText(), 0)});
+                walletData.loginAction('infinity');
+              }else {
+                console.log("Infinity wallet not connected");
+                // logout();
+              }
+            })();
+            break;
+          case "nns":
+            (async () => {
+              const authClient = await AuthClient.create({
+                idleOptions: {
+                  disableIdle: true, // set to true to disable idle timeout
+                }
+              });
+              const identity = authClient.getIdentity();
+              console.log('_principal: ', identity._principal);
+              console.log('connected: ', identity);
+              if (identity) {
+                walletData.setIdentity(identity);
+                walletData.setAccount([
+                  {
+                    name: "Internet Identity",
+                    address: principalToAccountIdentifier(identity.getPrincipal().toString(), 0),
+                  },
+                ]);
+                walletData.setCurrentAccount({ name: "Internet Identity", address: principalToAccountIdentifier(identity.getPrincipal().toString(), 0)});
+                walletData.loginAction('nns');
+              }else {
+                console.log("Internet Identity not connected");
+                // logout();
+              }
+            })();
+            break;
+          default:
+            break;
+        }
+      }else{
+        // logout();//Logout
+      }
+
+    },
+  }
 </script>
 
 <template>

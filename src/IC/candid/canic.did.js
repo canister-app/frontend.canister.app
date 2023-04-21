@@ -1,4 +1,4 @@
-export const idlFactory = ({ IDL }) => {
+export default ({ IDL }) => {
     const FileInit = IDL.Record({
         'name' : IDL.Text,
         'path' : IDL.Text,
@@ -7,13 +7,12 @@ export const idlFactory = ({ IDL }) => {
         'chunkCount' : IDL.Nat,
         'parent' : IDL.Text,
     });
-    const UserId = IDL.Principal;
     const FileId = IDL.Text;
     const ChunkData = IDL.Vec(IDL.Nat8);
-    const UserId__1 = IDL.Principal;
+    const UserId = IDL.Principal;
     const FileId__1 = IDL.Text;
     const FileInfo = IDL.Record({
-        'userId' : UserId__1,
+        'userId' : UserId,
         'name' : IDL.Text,
         'createdAt' : IDL.Int,
         'isFolder' : IDL.Bool,
@@ -54,7 +53,7 @@ export const idlFactory = ({ IDL }) => {
         'body' : IDL.Vec(IDL.Nat8),
     });
     const CanicActor = IDL.Service({
-        'createFile' : IDL.Func([FileInit, UserId], [IDL.Opt(FileId)], []),
+        'createFile' : IDL.Func([FileInit], [IDL.Opt(FileId)], []),
         'createFolder' : IDL.Func([IDL.Text], [], []),
         'deleteAsset' : IDL.Func([IDL.Text], [], []),
         'emptyFiles' : IDL.Func([], [], []),
@@ -78,9 +77,10 @@ export const idlFactory = ({ IDL }) => {
             [StreamingCallbackHttpResponse],
             ['query'],
         ),
-        'putFileChunk' : IDL.Func([FileId, IDL.Nat, ChunkData, UserId], [], []),
+        'putFileChunk' : IDL.Func([FileId, IDL.Nat, ChunkData], [], []),
         'removeFile' : IDL.Func([IDL.Text], [], []),
         'updateSetting' : IDL.Func([IDL.Text, IDL.Bool], [IDL.Bool], []),
+        'whoami' : IDL.Func([], [IDL.Text], []),
     });
     return CanicActor;
 };
