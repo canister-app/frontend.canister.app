@@ -235,7 +235,7 @@
       data: [110, 80, 125, 55, 95, 75, 90, 110, 80, 125, 55, 95, 75, 90, 110, 80, 125, 55, 95, 75, 90]
     }, {
       label: "Referral Join",
-      color: NioApp.hexRGB("#9cabff", .2),
+      color: NioApp.hexRGB("#9cabff", .4),
       data: [125, 55, 95, 75, 90, 110, 80, 125, 55, 95, 75, 90, 110, 80, 125, 55, 95, 75, 90, 75, 90]
     }]
   };
@@ -561,13 +561,13 @@
   });
   var salesOverview = {
     labels: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30"],
-    dataUnit: 'USD',
-    lineTension: .3,
+    dataUnit: 'BTC',
+    lineTension: 0.1,
     datasets: [{
       label: "Sales Overview",
       color: "#798bff",
-      background: NioApp.hexRGB('#798bff', .35),
-      data: [6200, 7850, 8500, 6500, 5790, 9690, 8200, 6860, 9500, 8590, 8230, 8950, 8200, 7680, 8500, 5500, 9200, 9690, 8200, 7800, 9500, 7500, 9200, 9690, 8200, 7800, 8500, 9100, 9360, 9690]
+      background: NioApp.hexRGB('#798bff', .3),
+      data: [8200, 7800, 9500, 5500, 9200, 9690, 8200, 7800, 9500, 5500, 9200, 9690, 8200, 7800, 9500, 5500, 9200, 9690, 8200, 7800, 9500, 5500, 9200, 9690, 8200, 7800, 9500, 5500, 9200, 9690]
     }]
   };
   function lineSalesOverview(selector, set_data) {
@@ -583,7 +583,7 @@
           label: _get_data.datasets[i].label,
           tension: _get_data.lineTension,
           backgroundColor: _get_data.datasets[i].background,
-          borderWidth: 4,
+          borderWidth: 2,
           borderColor: _get_data.datasets[i].color,
           pointBorderColor: "transparent",
           pointBackgroundColor: "transparent",

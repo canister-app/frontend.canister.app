@@ -1,8 +1,6 @@
-/*!
- * Theme Name: Default
- * Package : DashLite
- * Author: Softnio
- * Author URI: http://themeforest.net/user/softnio
- * Version	 :	1.0.0
- * Updated	 :	07.23.2020
-**/
+.padding-5{
+    padding: 5px;
+}
+.no-spacing{
+    letter-spacing: normal !important;
+}

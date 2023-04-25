@@ -11,6 +11,9 @@
         _mobile_nav = 'mobile-menu',
         _header = 'nk-header',
         _header_menu = 'nk-header-menu',
+        _sidebar = 'nk-sidebar',
+        _sidebar_mob = 'nk-sidebar-mobile',
+        _app_sidebar = 'nk-apps-sidebar',
         //breakpoints
         _break = NioApp.Break;
 
@@ -18,12 +21,19 @@
         Object.keys(ext).forEach(function (key) { obj[key] = ext[key]; });
         return obj;
     }
+    // ClassInit @v1.0
+    NioApp.ClassBody = function () {
+        NioApp.AddInBody(_sidebar);
+        NioApp.AddInBody(_app_sidebar);
+    };
 
     // ClassInit @v1.0
     NioApp.ClassNavMenu = function () {
         NioApp.BreakClass('.' + _header_menu, _break.lg, { timeOut: 0 });
+        NioApp.BreakClass('.' + _sidebar, _break.lg, { timeOut: 0, classAdd: _sidebar_mob });
         $win.on('resize', function () {
             NioApp.BreakClass('.' + _header_menu, _break.lg);
+            NioApp.BreakClass('.' + _sidebar, _break.lg, { classAdd: _sidebar_mob });
         });
     };
 
@@ -84,6 +94,7 @@
                 self.closest("li").addClass('active current-page').parents().closest("li").addClass("active current-page");
                 self.closest("li").children('.nk-menu-sub').css('display', 'block');
                 self.parents().closest("li").children('.nk-menu-sub').css('display', 'block');
+                this.scrollIntoView({ block: "start"});
             } else {
                 self.closest("li").removeClass('active current-page').parents().closest("li:not(.current-page)").removeClass("active");
             }
@@ -154,10 +165,10 @@
 
         $doc.on('mouseup', function (e) {
             if (toggleCurrent) {
-                var $toggleCurrent = $(toggleCurrent), currentTarget =  $(toggleCurrent).data('target'), $contentCurrent=$(`[data-content="${currentTarget}"]`), $dpd = $('.datepicker-dropdown'), $tpc = $('.ui-timepicker-container'), $mdl = $('.modal');
+                var $toggleCurrent = $(toggleCurrent), currentTarget =  $(toggleCurrent).data('target'), $contentCurrent=$(`[data-content="${currentTarget}"]`), $dpd = $('.datepicker-dropdown'), $tpc = $('.ui-timepicker-container');
                 if (!$toggleCurrent.is(e.target) && $toggleCurrent.has(e.target).length === 0 && !$contentCurrent.is(e.target) && $contentCurrent.has(e.target).length === 0
                     && $(e.target).closest('.select2-container').length === 0  && !$dpd.is(e.target) && $dpd.has(e.target).length === 0
-                    && !$tpc.is(e.target) && $tpc.has(e.target).length === 0 && !$mdl.is(e.target) && $mdl.has(e.target).length === 0) {
+                    && !$tpc.is(e.target) && $tpc.has(e.target).length === 0) {
                     NioApp.Toggle.removed($toggleCurrent.data('target'), attr);
                     toggleCurrent = false;
                 }
@@ -191,7 +202,7 @@
             attr = (opt) ? extend(def, opt) : def;
 
         $(imenu).on('click', function (e) {
-            if (NioApp.Win.width < _break.lg) {
+            if ((NioApp.Win.width < _break.lg) || ($(this).parents().hasClass(_sidebar))) {
                 NioApp.Toggle.dropMenu($(this), attr);
             }
             e.preventDefault();
@@ -201,9 +212,9 @@
     // Show Menu @v1.0
     NioApp.TGL.showmenu = function (elm, opt) {
         var toggle = (elm) ? elm : '.nk-nav-toggle', $toggle = $(toggle), $contentD = $('[data-content]'),
-            toggleBreak = ($contentD.hasClass(_header_menu)) ? _break.lg : _break.xl,
-            toggleOlay = _header + '-overlay', toggleClose = { profile: true, menu: false },
-            def = { active: 'toggle-active', content: _header + '-active', body: 'nav-shown', overlay: toggleOlay, break: toggleBreak, close: toggleClose },
+            toggleBreak = $contentD.hasClass(_header_menu) ? _break.lg : _break.xl,
+            toggleOlay = _sidebar + '-overlay', toggleClose = { profile: true, menu: false },
+            def = { active: 'toggle-active', content: _sidebar + '-active', body: 'nav-shown', overlay: toggleOlay, break: toggleBreak, close: toggleClose },
             attr = (opt) ? extend(def, opt) : def;
 
         $toggle.on('click', function (e) {
@@ -217,8 +228,8 @@
             }
         });
 
-        $win.on('resize', function(){
-            if((NioApp.Win.width < _break.xl || NioApp.Win.width < toggleBreak) && !NioApp.State.isMobile){ 
+        $win.on('resize', function () {
+            if (NioApp.Win.width < _break.xl || NioApp.Win.width < toggleBreak) {
                 NioApp.Toggle.removed($toggle.data('target'), attr);
             }
         });
@@ -410,7 +421,7 @@
                         searchPlaceholder: "Type in to Search",
                         lengthMenu: "<span class='d-none d-sm-inline-block'>Show</span><div class='form-control-select'> _MENU_ </div>",
                         info: "_START_ -_END_ of _TOTAL_",
-                        infoEmpty: "",
+                        infoEmpty: "0",
                         infoFiltered: "( Total _MAX_  )",
                         paginate: {
                             "first": "First",
@@ -750,6 +761,7 @@
 
     // Extra @v1.1
     NioApp.OtherInit = function () {
+        NioApp.ClassBody();
         NioApp.PassSwitch();
         NioApp.CurrentLink();
         NioApp.LinkOff('.is-disable');

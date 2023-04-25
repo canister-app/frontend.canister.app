@@ -106,8 +106,8 @@ class ICnetwork {
             }
         }
         if (!Object.prototype.hasOwnProperty.call(this._canisters, cid)){
-            if (walletData.isLogged && (walletData.isLogged == "infinity" || walletData.isLogged == "plug")) {
-                let _targetType = walletData.isLogged == "infinity"?"infinityWallet":"plug";
+            if (walletData.isLogged && (walletData.isLogged == "bitfinity" || walletData.isLogged == "plug")) {
+                let _targetType = walletData.isLogged == "bitfinity"?"bitfinityWallet":"plug";
                 this._canisters[cid] = new ExtensionActor(cid, idl, _targetType);
             } else {
                 this._canisters[cid] = Actor.createActor(idl, {agent : this._agent, canisterId : cid});
@@ -120,8 +120,8 @@ class ICnetwork {
     _makeAgent() {
         if (window?.ic?.plug?.agent) {
             this._agent = window.ic.plug.agent;
-        } else if (window?.ic?.infinityWallet?.agent) {
-            this._agent = window.ic.infinityWallet.agent;
+        } else if (window?.ic?.bitfinityWallet?.agent) {
+            this._agent = window.ic.bitfinityWallet.agent;
         } else {
             var args = {};
             if (this._identity) args['identity'] = this._identity;

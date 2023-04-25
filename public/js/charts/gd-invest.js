@@ -574,7 +574,7 @@
                             }
                         }],
                         xAxes: [{
-                            display: false,
+                            display: false, 
                             stacked: (_get_data.stacked) ? _get_data.stacked : false,
                             ticks: {
                                 reverse: NioApp.State.isRTL

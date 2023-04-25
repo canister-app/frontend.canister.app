@@ -2,7 +2,7 @@
     <div class="nk-footer nk-footer-fluid bg-lighter">
         <div class="container-xl">
             <div class="nk-footer-wrap">
-                <div class="nk-footer-copyright"> &copy; 2023 CANIC.APP | <a href="https://canister.app" target="_blank">Canister Team</a>
+                <div class="nk-footer-copyright"> &copy; 2023 CANISTER.APP | <a href="https://canister.app" target="_blank">Canister Team</a>
                 </div>
                 <div class="nk-footer-links">
                     <ul class="nav nav-sm">
