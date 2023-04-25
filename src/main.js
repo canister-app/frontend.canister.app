@@ -14,6 +14,7 @@ const toastOptions = {
         [TYPE.ERROR]: {
             timeout: 10000,
             closeButton: false,
+            hideProgressBar: true,
         },
         [TYPE.SUCCESS]: {
             timeout: 3000,
@@ -27,6 +28,5 @@ const toastOptions = {
 };
 
 app.use(Toast, toastOptions)
-
 app.use(router)
 app.mount('#app')

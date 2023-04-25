@@ -10,9 +10,11 @@
   import { useToast } from "vue-toastification";
   import { walletData } from "../services/store"
   import LoginModal from "./modals/LoginModal.vue"
+  import EventBus from "../services/EventBus";
   const MAX_CHUNK_SIZE = 1024 * 1024 * 1.5; // 1.5MB
   const userId = Principal.fromText("2vxsx-fae");//Need authen
   const encodeArrayBuffer = (file) => Array.from(new Uint8Array(file));
+
   export default {
       components: { VueFinalModal, LoginModal },
       data() {
@@ -40,9 +42,22 @@
       },
       methods: {
           async init(){
+              this.customDomain = '';
+              this.isPublic = false;
               let _setting = await FileManager.getSetting();
+              try{
+                  this.customDomain = _setting[0].domain;
+                  this.isPublic = _setting[0].isPublic;
+              }catch (e) {
+                  //No configuration
+              }
+
           },
           async btnUpdateSetting() {
+              let _currentSetting = {
+                  isPublic: JSON.parse(JSON.stringify(this.isPublic)),
+                  customDomain: JSON.parse(JSON.stringify(this.customDomain))
+              }
               let validDomain = checkIsValidDomain(this.customDomain);
               if(!validDomain) this.toast.error("Invalid domain name, accepted only letter and number!")
               const toastSetting = this.toast("Saving settings...");
@@ -51,6 +66,9 @@
               if(_setting){
                   this.toast.success("Setting saved!", { id: toastSetting})
               }else{
+                  //restore setting value
+                  this.isPublic = _currentSetting.isPublic;
+                  this.customDomain = _currentSetting.customDomain;
                   this.toast.error("Save failed, please try again later!", { id: toastSetting})
               }
           },
@@ -234,6 +252,7 @@
               this.files = [];//reset before
               setTimeout(()=>{
                   this.getFolder();
+                  this.init();
               }, 2000)
           },
           loginModal: (val, oldVal)=>{
@@ -247,13 +266,21 @@
           setTimeout(()=>{
               this.getFolder();
           }, 2000)
+
+          setTimeout(()=>{
+              this.init();
+          }, 3000)
+
+          EventBus.on("showModalSetting", isOpen => {
+              this.showModalSetting = isOpen;
+          });
       },
       setup() {
           // Get toast interface
           const toast = useToast();
           // Make it available inside methods
           return { toast }
-      },
+      }
   }
   const isImage = (mimeType) => {
       let flag = false;
@@ -357,7 +384,7 @@
             <div class="nk-fmg-actions">
                 <ul class="nk-block-tools g-3">
                     <li>
-                    <a href="javascript:void(0)" @click="getFolder()" class="btn btn-light"><em class="icon ni ni-repeat"></em> <span>Refresh</span></a></li>
+                    <a href="javascript:void(0)" @click="getFolder()" class="btn btn-light d-none "><em class="icon ni ni-repeat"></em> <span>Refresh</span></a></li>
                     <li>
                     <a href="javascript:void(0)" @click="btnCreateFolder()" class="btn btn-light"><em class="icon ni ni-folder-plus"></em> <span>Folder</span></a></li>
 
@@ -519,6 +546,11 @@
                 </div><!-- .tab-pane -->
             </div><!-- .tab-content -->
         </div><!-- .nk-block -->
+
+        <div class="alert alert-fill alert-warning alert-icon" v-if="isPublic">
+            <em class="icon ni ni-alert-circle"></em> Your drive are being published on domain <strong><a :href="`https://${customDomain}.canic.app`" target="_blank">{{customDomain}}.canic.app</a></strong>.
+            Anyone can access these files if there is a link. You can change the settings <a href="javascript:void(0)" @click="btnShowSetting" class="alert-link">here</a>.
+        </div>
             <VueFinalModal v-model="previewModal" classes="vue-modal-container" content-class="vue-modal-content">
                 <button class="menu-toggler active icon-close modal__close" @click="previewModal = false"><em class="menu-off menu-icon ni ni-cross"></em></button>
                 <h5 class="title mb-3" v-if="previewContent">
@@ -545,7 +577,7 @@
                     </h5>
                     <div class="input-group">
                         <div class="input-group-append">
-                            <span class="input-group-text">/{{currentPath}}</span>
+                            <span class="input-group-text">{{currentPath}}</span>
                         </div>
                         <input type="text" v-model="newFolderName" @change="updateFolderName" placeholder="Name of new folder" class="form-control input-group-sm">
                     </div>

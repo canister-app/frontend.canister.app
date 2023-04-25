@@ -1,4 +1,5 @@
 export default ({ IDL }) => {
+
     const FileInit = IDL.Record({
         'name' : IDL.Text,
         'path' : IDL.Text,
@@ -53,11 +54,15 @@ export default ({ IDL }) => {
         'body' : IDL.Vec(IDL.Nat8),
     });
     const CanicActor = IDL.Service({
+        'addAdmin' : IDL.Func([IDL.Principal], [], ['oneway']),
+        'addBlacklistDomain' : IDL.Func([IDL.Text], [], ['oneway']),
         'createFile' : IDL.Func([FileInit], [IDL.Opt(FileId)], []),
         'createFolder' : IDL.Func([IDL.Text], [], []),
         'deleteAsset' : IDL.Func([IDL.Text], [], []),
         'emptyFiles' : IDL.Func([], [], []),
         'generateUUID' : IDL.Func([], [IDL.Text], []),
+        'getAdmins' : IDL.Func([], [IDL.Vec(IDL.Principal)], []),
+        'getBlacklistDomain' : IDL.Func([], [IDL.Vec(IDL.Text)], []),
         'getFileChunk' : IDL.Func(
             [FileId, IDL.Nat],
             [IDL.Opt(ChunkData)],
@@ -66,11 +71,7 @@ export default ({ IDL }) => {
         'getFiles' : IDL.Func([], [IDL.Opt(IDL.Vec(FileInfo))], ['query']),
         'getFolder' : IDL.Func([IDL.Text], [IDL.Opt(IDL.Vec(FileInfo))], ['query']),
         'getMemory' : IDL.Func([], [IDL.Nat], ['query']),
-        'getSettings' : IDL.Func(
-            [],
-            [IDL.Opt(IDL.Vec(IDL.Tuple(IDL.Text, Setting)))],
-            ['query'],
-        ),
+        'getSetting' : IDL.Func([], [IDL.Opt(Setting)], ['query']),
         'http_request' : IDL.Func([HttpRequest], [HttpResponse], ['query']),
         'http_request_streaming_callback' : IDL.Func(
             [StreamingCallbackToken],
@@ -78,7 +79,10 @@ export default ({ IDL }) => {
             ['query'],
         ),
         'putFileChunk' : IDL.Func([FileId, IDL.Nat, ChunkData], [], []),
+        'removeAdmin' : IDL.Func([IDL.Principal], [], ['oneway']),
+        'removeBlacklistDomain' : IDL.Func([IDL.Text], [], ['oneway']),
         'removeFile' : IDL.Func([IDL.Text], [], []),
+        'transformPath' : IDL.Func([HttpRequest], [IDL.Text], ['query']),
         'updateSetting' : IDL.Func([IDL.Text, IDL.Bool], [IDL.Bool], []),
         'whoami' : IDL.Func([], [IDL.Text], []),
     });

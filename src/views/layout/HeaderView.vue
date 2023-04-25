@@ -3,8 +3,13 @@
     import {StoicIdentity} from "ic-stoic-identity";
     import router from "../../router";
     import {principalToAccountIdentifier, formatICP, rosettaApi} from "../../IC/utils";
+    import EventBus from "../../services/EventBus";
     function btnLogin() {
         walletData.setModalVisible(true);
+    }
+    function btnShowSetting(){
+        console.log('ok emit');
+        EventBus.emit("showModalSetting", true);
     }
     function btnLogout(){
         window.Swal.fire({
@@ -38,22 +43,53 @@
                 </div>
                 <div class="nk-header-brand">
                     <router-link to="/" class="logo-link">
-                        <img class="logo-light logo-img" src="/images/logo.png" srcset="/images/logo2x.png 2x" alt="logo">
-                        <img class="logo-dark logo-img" src="/images/logo-dark.png" srcset="/images/logo-dark2x.png 2x" alt="logo-dark">
+                        <img class="logo-light logo-img" src="/images/logo.png" srcset="/images/logo.png 2x" alt="logo">
+                        <img class="logo-dark logo-img" src="/images/logo-dark2x.png" srcset="/images/logo-dark2x.png 2x" alt="logo-dark">
                     </router-link>
                 </div><!-- .nk-header-brand -->
                 <div class="nk-header-menu" data-content="headerNav">
                     <div class="nk-header-mobile">
                         <div class="nk-header-brand">
                             <router-link to="/" class="logo-link">
-                                <img class="logo-light logo-img" src="/images/logo.png" srcset="/images/logo2x.png 2x" alt="logo">
-                                <img class="logo-dark logo-img" src="/images/logo-dark.png" srcset="/images/logo-dark2x.png 2x" alt="logo-dark">
+                                <img class="logo-light logo-img" src="/images/logo.png" srcset="/images/logo.png 2x" alt="logo">
+                                <img class="logo-dark logo-img" src="/images/logo-dark2x.png" srcset="/images/logo-dark2x.png 2x" alt="logo-dark">
                             </router-link>
                         </div>
                         <div class="nk-menu-trigger me-n2">
                             <a href="javascript:void(0)" class="nk-nav-toggle nk-quick-nav-icon" data-target="headerNav"><em class="icon ni ni-arrow-left"></em></a>
                         </div>
                     </div>
+                    <ul class="nk-menu nk-menu-main ui-s2">
+                        <li class="nk-menu-item has-sub">
+                            <a href="#" class="nk-menu-link nk-menu-toggle">
+                                <span class="nk-menu-text">Home</span>
+                            </a>
+<!--                            <ul class="nk-menu-sub">-->
+<!--                                <li class="nk-menu-item">-->
+<!--                                    <a href="/" class="nk-menu-link">-->
+<!--                                        <span class="nk-menu-text">My files</span>-->
+<!--                                    </a>-->
+<!--                                </li>&lt;!&ndash; .nk-menu-item &ndash;&gt;-->
+
+<!--                            </ul>&lt;!&ndash; .nk-menu-sub &ndash;&gt;-->
+                        </li><!-- .nk-menu-item -->
+                        <li class="nk-menu-item">
+                            <a class="nk-menu-link " href="javascript:void(0)" @click="btnShowSetting">
+                                <span class="nk-menu-text"><em class="icon ni ni-setting-alt"></em> Settings</span>
+                            </a>
+                        </li><!-- .nk-menu-item -->
+
+                    </ul><!-- .nk-menu -->
+<!--                    <div class="nk-fmg-status">-->
+<!--                        <h6 class="nk-fmg-status-title"><em class="icon ni ni-hard-drive"></em><span>Canister Storage</span></h6>-->
+<!--                        <div class="progress progress-md bg-light">-->
+<!--                            <div class="progress-bar" data-progress="5"></div>-->
+<!--                        </div>-->
+<!--                        <div class="nk-fmg-status-info">0.47 GB of 4 GB used</div>-->
+<!--                        <div class="nk-fmg-status-action">-->
+<!--                            <a href="#" class="link link-primary link-sm">Create New Bucket</a>-->
+<!--                        </div>-->
+<!--                    </div>-->
                 </div><!-- .nk-header-menu -->
                 <div class="nk-header-tools">
                     <ul class="nk-quick-nav">
@@ -66,7 +102,7 @@
                                     <div class="user-avatar sm">
                                         <em class="icon ni ni-user-alt"></em>
                                     </div>
-                                    <div class="user-info d-none d-xl-block">
+                                    <div class="user-info d-xl-block">
                                         <div class="user-status">Welcome</div>
                                         <div class="user-name dropdown-indicator">
                                             {{walletData.txtPrincipal.slice(0,10)+'...'+walletData.txtPrincipal.slice(-10)}}
