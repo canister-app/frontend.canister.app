@@ -37,51 +37,49 @@
 </script>
 
 <template>
-    <VueFinalModal v-model="loginModal" :z-index-base="9000" classes="vue-modal-container" content-class="vue-modal-content">
-        <button class="menu-toggler active icon-close modal__close" @click="loginModal=false"><em class="menu-off menu-icon ni ni-cross"></em></button>
-        <h5 class="title mb-3">
-            Connect your wallet
-        </h5>
-        <div v-if="!walletData.isLogged" class="btn-group-login">
-            <div class="row">
-                <div class="col-6">
-                    <a href="javascript:void(0)" @click="login('nns')" class="btn no-spacing btn-wider btn-secondary">
-                        <img src="/partner/dfinity-logo.png" alt="Internet Identity" class=" wallet-icon-small"> Internet Identity
-                    </a>
+    <VueFinalModal v-model="loginModal" :z-index-base="2000" classes="modal fade show" content-class="modal-dialog">
+            <div class="modal-content" v-if="!walletData.isLogged" >
+                <a href="#" @click.stop="loginModal=false" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <em class="icon ni ni-cross"></em>
+                </a>
+                <div class="modal-header">
+                    <h5 class="modal-title">Connect your wallet</h5>
                 </div>
-                <div class="col-6">
-                    <a href="javascript:void(0)" @click="login('plug')" class="btn no-spacing btn-wider btn-light">
-                        <img src="/partner/plug-logo.png" alt="Plug" class="wallet-icon-small"> Plug Wallet
-                    </a>
+                <div class="modal-body">
+                        <div class="row gy-4 btn-group-login">
+                            <div class="col-md-6">
+                                <a href="javascript:void(0)" @click="login('nns')" class="btn no-spacing btn-wider btn-secondary">
+                                    <img src="/partner/dfinity-logo.png" alt="Internet Identity" class=" wallet-icon-small"> Internet Identity
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="javascript:void(0)" @click="login('plug')" class="btn no-spacing btn-wider btn-light">
+                                    <img src="/partner/plug-logo.png" alt="Plug" class="wallet-icon-small"> Plug Wallet
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="javascript:void(0)" @click="login('stoic')" class="btn no-spacing btn-wider btn-light">
+                                    <img src="/partner/stoic-logo.png" alt="Stoic" class="wallet-icon-small"> Stoic Wallet
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="javascript:void(0)" @click="login('bitfinity')" class="btn no-spacing btn-wider btn-light">
+                                    <img src="/partner/bitfinitywallet-logo.png" alt="Infinity" class="wallet-icon-small"> Bitfinity Wallet
+                                </a>
+                            </div>
+                        </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-6">
-                    <a href="javascript:void(0)" @click="login('stoic')" class="btn no-spacing btn-wider btn-light">
-                        <img src="/partner/stoic-logo.png" alt="Stoic" class="wallet-icon-small"> Stoic Wallet
-                    </a>
+                <div class="modal-footer bg-light">
+                    <ul class="btn-toolbar g-4 align-center">
+                        <li><a href="javascript:void(0)" @click="loginModal=false" class="link link-primary">Close</a></li>
+                    </ul>
                 </div>
-                <div class="col-6">
-                    <a href="javascript:void(0)" @click="login('bitfinity')" class="btn no-spacing btn-wider btn-light">
-                        <img src="/partner/bitfinitywallet-logo.png" alt="Infinity" class="wallet-icon-small"> Bitfinity Wallet
-                    </a>
-                </div>
-            </div>
-
         </div>
 
-        <div class="nk-modal-action justify-end">
-            <ul class="btn-toolbar g-4 align-center">
-                <li><a href="javascript:void(0)" @click="loginModal=false" class="link link-primary">Close</a></li>
-            </ul>
-        </div>
     </VueFinalModal>
 
 </template>
 <style>
-    .btn-group-login a{
-        margin-top: 20px;
-    }
     .btn-group-login img{
         margin-right: 20px;
     }

@@ -6,44 +6,14 @@ import canic from './candid/canic.did.js';
 
 import ledgerIDL from './candid/ledger.did.js';
 import governanceIDL from './candid/governance.did.js';
+import canisterManager from './candid/canisterManager.did.js';
 import nnsIDL from './candid/nns.did.js';
 import cyclesIDL from './candid/cycles.did.js';
 
 // CANISTER_ID is replaced by webpack based on node environment
 export const canisterId = config.CANIC_APP;//process.env.BUCKET_CANISTER_ID;
 const LEDGER_CANISTER_ID = "ryjl3-tyaaa-aaaaa-aaaba-cai";
-const GOVERNANCE_CANISTER_ID = "rrkah-fqaaa-aaaaa-aaaaq-cai";
-const NNS_CANISTER_ID = "qoctq-giaaa-aaaaa-aaaea-cai";
 
-/**
- *
- * @param {string | import("@dfinity/principal").Principal} canisterId Canister ID of Agent
- * @param {{agentOptions?: import("@dfinity/agent").HttpAgentOptions; actorOptions?: import("@dfinity/agent").ActorConfig}} [options]
- * @return {import("@dfinity/agent").ActorSubclass<import("./bucket.did.js")._SERVICE>}
- */
-export const createActor = (canisterId, options) => {
-    const agent = new HttpAgent({ ...options?.agentOptions });
-
-    // Fetch root key for certificate validation during development
-    if(config.ENV !== "production") {
-        agent.fetchRootKey().catch(err=>{
-            console.warn("Unable to fetch root key. Check to ensure that your local replica is running");
-            console.error(err);
-        });
-    }
-
-    // Creates an actor with using the candid interface and the HttpAgent
-    return Actor.createActor(idlFactory, {
-        agent,
-        canisterId,
-        ...options?.actorOptions,
-    });
-};
-
-/**
- * A ready-to-use agent for the bucket canister
- * @type {import("@dfinity/agent").ActorSubclass<import("./bucket.did.js")._SERVICE>}
- */
 const _preloadedIdls = {
     'ledger' : LEDGER_CANISTER_ID,
 };
@@ -77,7 +47,8 @@ class ICnetwork {
         'governance' : governanceIDL,
         'ledger' : ledgerIDL,
         'ryjl3-tyaaa-aaaaa-aaaba-cai' : ledgerIDL,
-        'rnczv-riaaa-aaaap-qbbwq-cai': canic
+        'rnczv-riaaa-aaaap-qbbwq-cai': canic,
+        [config.CANISTER_MANAGER_ID]: canisterManager,
     };
 
     _identity = false;
@@ -110,6 +81,14 @@ class ICnetwork {
                 let _targetType = walletData.isLogged == "bitfinity"?"bitfinityWallet":"plug";
                 this._canisters[cid] = new ExtensionActor(cid, idl, _targetType);
             } else {
+                if(config.ENV == "development") {
+                    console.log('Fetchroot development')
+                    this._agent.fetchRootKey().catch(err=>{
+                        console.warn("Unable to fetch root key. Check to ensure that your local replica is running");
+                        console.error(err);
+                    });
+                }
+                console.log('cid: ', cid);
                 this._canisters[cid] = Actor.createActor(idl, {agent : this._agent, canisterId : cid});
             }
         }
@@ -179,6 +158,7 @@ export const _apiHandle = {
 //         }
 //     });
 export default {
+    connect : (host, identity) => new ICnetwork(host ? host : config.IC_ENPOINT, identity),
     getFolder,
     createFolder,
     whoami,

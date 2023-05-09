@@ -85,45 +85,4 @@
       min-width: 99% !important;
     }
   }
-  .vue-modal-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .vue-modal-content {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    margin: 0 1rem;
-    padding: 1rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.25rem;
-    background: #fff;
-    min-width: 600px;
-    max-height: 450px;
-  }
-  .modal__title {
-    margin: 0 2rem 0 0;
-    font-weight: 700;
-  }
-  .modal__content{
-    flex-grow: 1;
-    overflow-y: auto;
-    margin-top: 1.25em;
-    margin-bottom: 1.25em;
-
-  }
-  .modal__close {
-    position: absolute;
-    top: 0.5rem;
-    border: none;
-    background: none;
-    right: 0.5rem;
-  }
-  .nk-fmg{
-    height:100vh;
-  }
-  .vfm{
-    z-index: 99999;
-  }
 </style>

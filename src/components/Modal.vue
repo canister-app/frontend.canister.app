@@ -1,19 +1,17 @@
-<script setup>
-    console.log('call')
-    const canisterModal = true;
-</script>
 <script>
     import LoginModal from './modals/LoginModal.vue'
+    import DeployModal from './modals/DeployModal.vue'
+    import CartModal from "./modals/CartModal.vue";
 
     export default {
-        components: { LoginModal },
+        components: {CartModal, LoginModal, DeployModal },
         data() {
-            return {
-
-            }
+            return {}
         }
     }
 </script>
 <template>
     <LoginModal />
+    <DeployModal />
+    <CartModal />
 </template>

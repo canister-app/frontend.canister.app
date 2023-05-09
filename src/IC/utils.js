@@ -11,8 +11,22 @@ const isHex = (h) => {
     var regexp = /^[0-9a-fA-F]+$/;
     return regexp.test(h);
 };
+export const validateAddress = (a) => {
+    return (isHex(a) && a.length === 64)
+}
+export const validatePrincipal = (p) => {
+    try {
+        return (p === Principal.fromText(p).toText());
+    } catch (e) {
+        return false;
+    }
+}
 export const textToPrincipal = (t) => {
+    console.log('t: ', t);
     return Principal.fromText(t);
+}
+export const principalToText = (p) => {
+    return typeof(p) == 'object'?Principal.fromUint8Array(p._arr).toText():p;
 }
 const _accountIdentifier = (u) => {
     if (isHex(u) && u.length === 64) {
@@ -95,11 +109,28 @@ export const formatICP = (balance) =>{
     let n = Number(balance) / 100000000;
     return n.toFixed(8).replace(/0{1,6}$/, "");
 }
+export const showLoading = (text)=>{
+    window.Swal.fire({
+        html: '<div class="spinner-grow spinner-grow-sm" role="status"></div> '+text,
+        allowEscapeKey: false,
+        allowOutsideClick: false,
+        showConfirmButton: false
+    });
+}
+export const isMultiInput = (name)=>{
+    const regex = /\[\]/g;
+    return name.match(regex);
+}
 export default {
+    showLoading,
     genPreviewTag,
     checkIsValidDomain,
     rosettaApi,
     textToPrincipal,
     formatICP,
-    principalToAccountIdentifier
+    principalToAccountIdentifier,
+    principalToText,
+    validateAddress,
+    validatePrincipal,
+    isMultiInput
 }

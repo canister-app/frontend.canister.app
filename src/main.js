@@ -4,6 +4,8 @@ import router from './router'
 import Toast, { POSITION, TYPE  } from "vue-toastification";
 // Import the CSS or use your own!
 import "vue-toastification/dist/index.css";
+import { createDynamicForms } from '@asigloo/vue-dynamic-forms'
+const VueDynamicForms = createDynamicForms()
 
 
 const app = createApp(App)
@@ -26,7 +28,7 @@ const toastOptions = {
         }
     }
 };
-
+app.use(VueDynamicForms)
 app.use(Toast, toastOptions)
 app.use(router)
 app.mount('#app')

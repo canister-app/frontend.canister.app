@@ -4,9 +4,13 @@ import {principalToAccountIdentifier} from "../IC/utils";
 import {AuthClient} from "@dfinity/auth-client";
 import {walletData} from "./store";
 import router from "../router";
+import EventBus from "./EventBus";
+import {useToast} from "vue-toastification";
+const toast = useToast();
+
 const loginSuccessAction = () =>{
-    console.log('login success')
-    walletData.setModalVisible(false);
+    toast.success("Login successful!")
+    EventBus.emit("showLoginModal", false)
     router.push({ path: '/' });
 }
 
@@ -160,9 +164,10 @@ class WalletManager {
     };
     connectLoading(){
         window.Swal.fire({
-            html: 'Connecting...',
+            html: '<div class="spinner-grow spinner-grow-sm" role="status"></div> Connecting, please wait...',
             allowEscapeKey: false,
             allowOutsideClick: false,
+            showConfirmButton: false,
             didOpen: () => {
                 window.Swal.showLoading()
             }

@@ -12,7 +12,7 @@
 @@include('@@nodeRoot/node_modules/slick-carousel/slick/slick.min.js')
 @@include('@@nodeRoot/node_modules/clipboard/dist/clipboard.min.js')
 
-@@include('@@nodeRoot/node_modules/chart.js/dist/Chart.min.js')
+// @@include('@@nodeRoot/node_modules/chart.js/dist/Chart.min.js')
 
 @@include('@@nodeRoot/node_modules/nouislider/distribute/nouislider.min.js')
 
@@ -33,7 +33,7 @@
 @@include('vendors/knob/jquery.knob.min.js')
 
 /** jQuery Steps */
-@@include('vendors/jquery-steps/jquery.steps.min.js')
+// @@include('vendors/jquery-steps/jquery.steps.min.js')
 
 /** jQuery Magnific Popup */
 @@include('@@nodeRoot/node_modules/magnific-popup/dist/jquery.magnific-popup.min.js')
