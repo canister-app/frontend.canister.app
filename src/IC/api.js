@@ -88,7 +88,6 @@ class ICnetwork {
                         console.error(err);
                     });
                 }
-                console.log('cid: ', cid);
                 this._canisters[cid] = Actor.createActor(idl, {agent : this._agent, canisterId : cid});
             }
         }

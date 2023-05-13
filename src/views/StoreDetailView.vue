@@ -330,7 +330,9 @@
 </template>
 <style>
     .canister-intro * {
-        resize: none;
+        white-space: normal;
+        max-width:100%;
+        word-break:break-all;
         word-wrap:break-word;
     }
     .canister-intro code{

@@ -4,8 +4,10 @@ import {Buffer} from "buffer";
 import {Principal} from "@dfinity/principal";
 import { sha224 } from '@dfinity/principal/lib/esm/utils/sha224';
 import { getCrc32 } from '@dfinity/principal/lib/esm/utils/getCrc';
-
+import moment from "moment";
 export const rosettaApi = new RosettaApi();
+import { useToast } from 'vue-toastification'
+const toast = useToast();
 
 const isHex = (h) => {
     var regexp = /^[0-9a-fA-F]+$/;
@@ -22,7 +24,6 @@ export const validatePrincipal = (p) => {
     }
 }
 export const textToPrincipal = (t) => {
-    console.log('t: ', t);
     return Principal.fromText(t);
 }
 export const principalToText = (p) => {
@@ -121,6 +122,60 @@ export const isMultiInput = (name)=>{
     const regex = /\[\]/g;
     return name.match(regex);
 }
+export const formatDate = (time)=>{
+    return moment(Number(time)/1000000).format("MM/DD/YYYY HH:mm A");
+}
+
+function deepCopy(text) {
+
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+
+    // Avoid scrolling to bottom
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+        var successful = document.execCommand('copy');
+        var msg = successful ? 'successful' : 'unsuccessful';
+        console.log('Fallback: Copying text command was ' + msg);
+    } catch (err) {
+        console.error('Fallback: Oops, unable to copy', err);
+    }
+
+    document.body.removeChild(textArea);
+}
+export const copyToClipboard = (text, item) => {
+    if (!navigator.clipboard) {
+        deepCopy(text);
+        return;
+    }
+    navigator.clipboard.writeText(text).then(function() {
+        // toast.clear();
+        // toast.info(item+' copied!');
+        console.log('Async: Copying to clipboard was successful!');
+    }, function(err) {
+        console.error('Async: Could not copy text: ', err);
+    });
+}
+export const unit8ArrToString = (arr)=>{
+    return new TextDecoder().decode(arr);
+}
+export const canisterStatus = (status)=>{
+    let _status = null;
+    switch(Number(status)){
+        case 1: _status = {label: "Running", style: "success"};break;
+        case 2: _status = {label: "Stoped", style: "danger"};break;
+        case 3: _status = {label: "Deleted", style: "danger"};break;
+        default: _status = {label: "Ready", style: "primary"};break;
+    }
+    return _status;
+}
 export default {
     showLoading,
     genPreviewTag,
@@ -132,5 +187,9 @@ export default {
     principalToText,
     validateAddress,
     validatePrincipal,
-    isMultiInput
+    isMultiInput,
+    formatDate,
+    copyToClipboard,
+    unit8ArrToString,
+    canisterStatus
 }

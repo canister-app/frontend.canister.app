@@ -6,9 +6,11 @@ import Toast, { POSITION, TYPE  } from "vue-toastification";
 import "vue-toastification/dist/index.css";
 import { createDynamicForms } from '@asigloo/vue-dynamic-forms'
 const VueDynamicForms = createDynamicForms()
-
+import vSelect from 'vue-select'
+import 'vue-select/dist/vue-select.css';
 
 const app = createApp(App)
+app.component('v-select', vSelect)
 const toastOptions = {
     position: POSITION.BOTTOM_RIGHT,
     toastDefaults: {

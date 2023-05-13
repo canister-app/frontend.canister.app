@@ -3,6 +3,8 @@ import HomeView from '../views/HomeView.vue'
 import StoreView from '../views/StoreView.vue'
 import StoreDetailView from '../views/StoreDetailView.vue'
 import PublisherDashboard from "../views/PublisherDashboard.vue";
+import MyCanister from "../views/MyCanister.vue";
+import MyCanisterDetail from "../views/MyCanisterDetail.vue";
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -20,6 +22,16 @@ const router = createRouter({
       path: '/publisher-dashboard',
       name: 'publisher-dashboard',
       component: PublisherDashboard
+    },
+    {
+      path: '/my-canister',
+      name: 'my-canister',
+      component: MyCanister
+    },
+    {
+      path: '/my-canister/:canister_id',
+      name: 'my-canister-detail',
+      component: MyCanisterDetail
     },
     {
       path: '/store/:id',

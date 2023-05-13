@@ -4,14 +4,18 @@ import {walletData} from "@/services/store";
 import config from "@/config";
 import {textToPrincipal} from "@/ic/utils";
 import {Principal} from "@dfinity/principal";
+import {principalToText, canisterStatus} from "../IC/utils";
 const API_PUBLIC = _apiHandler.connect(config.IC_ENPOINT);
 
 const getCategory = async () =>{
     return await API_PUBLIC.canister(config.CANISTER_MANAGER_ID).get_categories();
 };
-//Deploy
-const handleDeploy = async (targetCanister, method, imageId, _args) =>{
-    return await API_PUBLIC.canister(config.CANISTER_MANAGER_ID).control_canister(Principal.fromText(targetCanister), method, Number(imageId), _args);
+//Deploy: Install/reinstall
+const handleDeploy = async (targetCanister, canisterName, method, imageId, _args) =>{
+    return await API_PUBLIC.canister(config.CANISTER_MANAGER_ID).canister_control(Principal.fromText(targetCanister), canisterName, method, Number(imageId), _args);
+};
+const handleAction = async (targetCanister, method)=>{
+  return await API_PUBLIC.canister(config.CANISTER_MANAGER_ID).canister_action(Principal.fromText(targetCanister), method);
 };
 const requestNewCanister = async (canisterName)=>{
     try{
@@ -27,7 +31,6 @@ const getCanisterImage = async(imageId)=>{
 };
 const getCanisterImages = async () =>{
     let _images = await API_PUBLIC.canister(config.CANISTER_MANAGER_ID).get_images();
-    console.log('_images: ', _images);
     let _images_data = _images.map( img => {
         return {
             image_id: img[0],
@@ -35,6 +38,7 @@ const getCanisterImages = async () =>{
             thumbnail: img[1].thumbnail,
             creator: img[1].creator,
             code: img[1].code,
+            brief: img[1].brief,
             description: img[1].description,
             name: img[1].name,
             repo: img[1].repo,
@@ -134,10 +138,10 @@ const createInitParams = async(formData)=>{
         );
         break;
         case "DIP20":
-            var _base64 = await toBase64(formData.tokenLogo);
+            var _base64 = await toBase64(formData.token_logo);
             _args = Array.from(IDL.encode(
                 [ IDL.Text, IDL.Text,  IDL.Text, IDL.Nat8, IDL.Nat, IDL.Principal, IDL.Nat],
-                [ _base64, formData.tokenName, formData.tokenSymbol, Number(formData.decimals), Number(formData.totalSupply*config.E8S), textToPrincipal(formData.feeTo), Number(formData.fees*config.E8S)
+                [ _base64, formData.token_name, formData.token_symbol, Number(formData.decimals), Number(formData.total_supply*config.E8S), textToPrincipal(formData.token_owner), Number(formData.transfer_fee*config.E8S)
                 ]));
             break;
         case "Axon":
@@ -168,11 +172,41 @@ const getCanisterPrice = async ()=>{
 const getMyCanister = async ()=>{
     const _api = _apiHandler.connect(config.IC_ENPOINT, walletData.principal);
     let myCanister = await _api.canister(config.CANISTER_MANAGER_ID).my_canister();
-    return myCanister;
+    console.log('myCanister: ', myCanister);
+    return myCanister.map( cani =>{
+        let _status = "---";
+        switch(Number(cani[1].status)){
+            case 1: _status = "Running";break;
+            case 2: _status = "Stoped";break;
+            case 3: _status = "Deleted";break;
+            default: _status = "Ready";break;
+        }
+        return {
+            heading: false,
+            idx: Number(cani[0]),
+            canisterId: principalToText(cani[1].canisterId),
+            canisterName: cani[1].canisterName,
+            canisterLabel: cani[1].canisterName + ': '+principalToText(cani[1].canisterId)+ ' ('+_status+')',
+            status: canisterStatus(cani[1].status),
+            owner: principalToText(cani[1].owner),
+            created: principalToText(cani[1].created),
+            updated: principalToText(cani[1].updated),
+            imageId: Number(cani[1].imageId)
+        }
+    })
 };
 const getCanister = async (canisterId)=>{
     const _api = _apiHandler.connect(config.IC_ENPOINT);
     let _canisterDetail= await _api.canister(config.CANISTER_MANAGER_ID).get_canister(textToPrincipal(canisterId));
+    if (Object.prototype.hasOwnProperty.call(_canisterDetail,"ok")){
+        return _canisterDetail.ok;
+    }else{
+        return null;
+    }
+};
+const getCanisterStatus = async (canisterId)=>{
+    const _api = _apiHandler.connect(config.IC_ENPOINT);
+    let _canisterDetail= await _api.canister(config.CANISTER_MANAGER_ID).get_canister_status(textToPrincipal(canisterId));
     if (Object.prototype.hasOwnProperty.call(_canisterDetail,"ok")){
         return _canisterDetail.ok;
     }else{
@@ -184,7 +218,7 @@ const getCanisterHistory = async (canisterId)=>{
     let _history= await _api.canister(config.CANISTER_MANAGER_ID).get_canister_history(textToPrincipal(canisterId));
     return _history;
 };
-const getCanisterStatus = async (canisterId) => {
+const getCanisterStatusCheck = async (canisterId) => {
     console.log('status: ', 'started!');
     const _api = _apiHandler.connect(config.IC_ENPOINT, walletData.principal);
     let _status = await _api.canister("aaaaa-aa").canister_status({ canister_id: textToPrincipal(canisterId)});
@@ -214,8 +248,10 @@ const _canisterManager = {
     getCanisterHistory,
     getCanister,
     getCanisterStatus,
+    getCanisterStatusCheck,
     createInitParams,
     handleDeploy,
+    handleAction,
     requestNewCanister
 };
 export default _canisterManager;

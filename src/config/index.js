@@ -19,6 +19,7 @@ const config = {
         [2]: "Tools",
         [3]: "DAO",
     },
-    IC_SCAN: 'https://dashboard.internetcomputer.org/canister/'
+    E8S: 100_000_000,
+    IC_SCAN: 'http://127.0.0.1:8000/?canisterId=bd3sg-teaaa-aaaaa-qaaba-cai&id='
 }
 export default config;

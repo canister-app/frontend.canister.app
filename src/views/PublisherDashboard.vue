@@ -83,7 +83,7 @@
                     console.log('image id: ', this.canister_template);
                     console.log('_arg: ', _args);
                     console.log('targetCanister: ', this.targetCanister);
-                    let result = await this.api.canister(config.CANISTER_MANAGER_ID).control_canister(Principal.fromText(targetCanister), action, Number(this.canister_template), _args);
+                    let result = await this.api.canister(config.CANISTER_MANAGER_ID).canister_control(Principal.fromText(targetCanister), action, Number(this.canister_template), _args);
                     console.log('result: ', result);
                     this.toast.success(action+" success");
                     window.Swal.close();
@@ -314,7 +314,7 @@
                                                 <td>
                                                     <span :class="`standard_format format_default label-token ${config.CANISTER_IMAGE_CATEGORY[template.template.category]}`">{{config.CANISTER_IMAGE_CATEGORY[template.template.category]}}</span> {{template.template.code}} / {{template.template.name}}
                                                     <div class="small">
-                                                        {{template.template.description}}</div>
+                                                        {{template.template.brief}}</div>
                                                     <div class="small">Created: {{moment(Number(template.template.time)/1000000).format("lll")}}</div>
                                                 </td>
                                                 <td>
@@ -322,7 +322,6 @@
                                                         <button class="btn btn-sm btn-warning" @click="editTemplate(template)">Edit</button>
                                                         <button class="btn btn-sm btn-danger" @click="deleteTemplate(template)">Delete</button>
                                                     </div>
-
                                                 </td>
                                             </tr>
                                             </tbody>
@@ -331,7 +330,7 @@
                                 </div>
 
                                 <div class="">
-                                    <h5>Create WASM Image:</h5>
+                                    <h5>Create new Image:</h5>
                                     <div class="form-item mb-4">
                                         <div class="mb-3">
                                             <label class="mb-2 form-label">Image Name:</label>

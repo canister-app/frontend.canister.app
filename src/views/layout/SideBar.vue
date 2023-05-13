@@ -5,49 +5,39 @@
                 <li class="nk-menu-heading">
                     <h6 class="overline-title text-primary-alt">Canister Store</h6>
                 </li><!-- .nk-menu-heading -->
-                <li class="nk-menu-item">
+                <li class="nk-menu-item has-sub">
                     <router-link to="/store" class="nk-menu-link">
                         <span class="nk-menu-icon"><em class="icon ni ni-layers"></em></span>
                         <span class="nk-menu-text">Canister Store</span>
                     </router-link>
+                    <ul class="nk-menu-sub">
+                        <li class="nk-menu-item">
+                            <a href="/store?sort=deploy" class="nk-menu-link"><span class="nk-menu-text">Top Deploy</span></a>
+                        </li>
+                        <li class="nk-menu-item">
+                            <a href="/store?sort=paid" class="nk-menu-link"><span class="nk-menu-text">Top Paid</span></a>
+                        </li>
+                        <li class="nk-menu-item">
+                            <a href="/store?sort=free" class="nk-menu-link"><span class="nk-menu-text">Top Free</span></a>
+                        </li>
+                    </ul><!-- .nk-menu-sub -->
                 </li><!-- .nk-menu-item -->
+
+
                 <li class="nk-menu-item">
                     <router-link to="/publisher-dashboard" class="nk-menu-link">
                         <span class="nk-menu-icon"><em class="icon ni ni-dashboard"></em></span>
                         <span class="nk-menu-text">Publisher Dashboard</span>
                     </router-link>
                 </li><!-- .nk-menu-item -->
-                <li class="nk-menu-item has-sub">
-                    <a href="#" class="nk-menu-link">
-                        <span class="nk-menu-icon"><em class="icon ni ni-tile-thumb"></em></span>
-                        <span class="nk-menu-text">Canister Statistics</span>
-                    </a>
-                    <ul class="nk-menu-sub">
-                        <li class="nk-menu-item">
-                            <a href="/" class="nk-menu-link"><span class="nk-menu-text">Top Deploy</span></a>
-                        </li>
-                        <li class="nk-menu-item">
-                            <a href="/" class="nk-menu-link"><span class="nk-menu-text">Top Paid</span></a>
-                        </li>
-                        <li class="nk-menu-item">
-                            <a href="/" class="nk-menu-link"><span class="nk-menu-text">Top Free</span></a>
-                        </li>
-                    </ul><!-- .nk-menu-sub -->
-                </li><!-- .nk-menu-item -->
                 <li class="nk-menu-heading">
                     <h6 class="overline-title text-primary-alt">Canister</h6>
                 </li><!-- .nk-menu-heading -->
                 <li class="nk-menu-item">
-                    <a href="html/index.html" class="nk-menu-link">
+                    <router-link to="/my-canister" class="nk-menu-link">
                         <span class="nk-menu-icon"><em class="icon ni ni-box"></em></span>
-                        <span class="nk-menu-text">My canisters</span>
-                    </a>
-                </li><!-- .nk-menu-item -->
-                <li class="nk-menu-item">
-                    <a href="html/index-sales.html" class="nk-menu-link">
-                        <span class="nk-menu-icon"><em class="icon ni ni-box-view"></em></span>
-                        <span class="nk-menu-text">New Canister</span>
-                    </a>
+                        <span class="nk-menu-text">My canister</span>
+                    </router-link>
                 </li><!-- .nk-menu-item -->
 
                 <li class="nk-menu-item has-sub">

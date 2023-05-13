@@ -45,7 +45,7 @@
                         <p>{{image.code}}</p>
                     </router-link></div>
                 <div class="p-2 w-70">
-                    <div class="sub-text text-ellipsis h-40">{{image.description}}</div>
+                    <div class="sub-text text-ellipsis h-40">{{image.brief}}</div>
                     <div class="rating-wrap my-1">
                         <ul class="rating">
                             <li><em class="icon ni ni-star-fill"></em></li>

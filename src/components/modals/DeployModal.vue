@@ -7,22 +7,30 @@
     import {useToast} from "vue-toastification";
     import { showLoading, isMultiInput, textToPrincipal } from "@/IC/utils.js";
     import ThresholdForm from "./forms/ThresholdForm.vue";
+    import DIP20Form from "./forms/DIP20Form.vue";
     import NftForm from "./forms/NftForm.vue";
     import TokenForm from "./forms/TokenForm.vue";
     import AxonForm from "./forms/AxonForm.vue";
     import IconRequired from "../icons/IconRequired.vue";
     import {principalToText} from "../../IC/utils";
+
     export default {
-        components: { VueFinalModal, TokenForm, NftForm, ThresholdForm, AxonForm, IconRequired },
+        components: { VueFinalModal, DIP20Form, TokenForm, NftForm, ThresholdForm, AxonForm, IconRequired },
         data() {
             return {
+                config,
                 deployModal: false,
                 canisterImage: null,
                 myCanisters: null,
+                canisterSelected: "0",
+                canisterName: "",
+                openedSelect:  false,
             }
         },
         methods: {
             async handleDeploy(e){
+                console.log('this.canisterSelected', this.canisterSelected)
+                const targetCanister = this.canisterSelected.canister
                 const form = e.target
                 const formData = new FormData(form) // get all named inputs in form
                 let _formData = {};
@@ -37,7 +45,7 @@
                 _formData['principals'] = _multiInput;
                 console.log('_formData: ', _formData);
                 //Step 0: Confirm
-                let _msg = _formData.canister_id =="0"?"Confirm install this image to new canister?":"<p>Reinstall canister <a href='"+config.IC_SCAN+_formData.canister_id+"' target='_blank' title='Check it on IC Scan'>"+_formData.canister_id+"</a> <em class=\"icon ni ni-external\"></em> with this image?</p><p class='text-danger'>ALERT: THIS ACTION CANNOT BE UNDONE, ALL DATA ON THIS CANISTER WILL BE ERASED!</p>";
+                let _msg = this.canisterSelected =="0"?"Confirm deploy this image to new canister?":"<p>Reinstall canister <strong>"+this.canisterName+"</strong> (<a href='"+config.IC_SCAN+this.canisterSelected+"' target='_blank' title='Check it on IC Scan'>"+this.canisterSelected+"</a> <em class=\"icon ni ni-external\">) </em> with this image?</p><p class='text-danger'>ALERT: THIS ACTION CANNOT BE UNDONE, ALL DATA ON THIS CANISTER WILL BE ERASED!</p>";
                 window.Swal.fire({
                     icon: 'question',
                     title: 'Confirmation',
@@ -48,12 +56,12 @@
                 }).then(async (result) => {
                     if (result.isConfirmed) {
                             //Step 1. Check canister id
-                            if(_formData.canister_id == "0"){
+                            if(this.canisterSelected == "0"){
                                 showLoading('Requesting new canister, please wait...');
-                                let _result = await CanisterManager.requestNewCanister(_formData.canister_name); //request new canister
+                                let _result = await CanisterManager.requestNewCanister(this.canisterName); //request new canister
                                 console.log('create canister', _result)
                                 if("ok" in _result){
-                                    await this.deploy(principalToText(_result.ok), "install", _formData)
+                                    await this.deploy(principalToText(_result.ok), this.canisterName, "install", _formData)
                                 }else{
                                     window.Swal.fire({
                                         icon: 'error',
@@ -62,26 +70,25 @@
                                     })
                                 }
                             }else{
-                                await this.deploy(_formData.canister_id, "reinstall", _formData)
+                                await this.deploy(this.canisterSelected, this.canisterName,"reinstall", _formData)
                             }
 
 
                         }
                     })
             },
-            async deploy(targetCanister, installMode, formData){
+            async deploy(targetCanister, canisterName, installMode, formData){
                 let _args = await CanisterManager.createInitParams(formData);
-                // let targetCanister = "be2us-64aaa-aaaaa-qaabq-cai";
                 console.log('targetCanister: ', targetCanister);
                 showLoading('Deploying data to canister <a href="javascript:void(0)">'+targetCanister+'</a>, please wait...');
 
-                let result = await CanisterManager.handleDeploy(targetCanister, installMode, this.canisterImage.imageId, _args);
+                let result = await CanisterManager.handleDeploy(targetCanister, canisterName, installMode, this.canisterImage.imageId, _args);
                 console.log('result: ', result);
                 if("ok" in result){
                     window.Swal.fire({
                         icon: 'success',
                         title: 'Success',
-                        html: '<p>Your canister successfully deployed.</p><p>Canister ID: <a href="http://127.0.0.1:8000/?canisterId=bd3sg-teaaa-aaaaa-qaaba-cai&id='+targetCanister+'" target="_blank">'+targetCanister+'</a> <em class="icon ni ni-external"></em>',
+                        html: '<p>Your canister successfully deployed.</p><p>Canister ID: <a href="'+config.IC_SCAN+targetCanister+'" target="_blank">'+targetCanister+'</a> <em class="icon ni ni-external"></em>',
                     })
                 }else{
                     window.Swal.fire({
@@ -93,26 +100,26 @@
             },
             async getMyCanister(){
                 this.myCanisters = null;
+                this.canisterName = '';
                 let _myCanisters = await CanisterManager.getMyCanister();
-                this.myCanisters = _myCanisters.map( cani =>{
-                    let _status = "---";
-                    switch(Number(cani[1].status)){
-                        case 1: _status = "Running";break;
-                        case 2: _status = "Stoped";break;
-                        case 3: _status = "Deleted";break;
-                        default: _status = "Ready";break;
-                    }
-                    return {
-                        idx: cani[0],
-                        canisterId: principalToText(cani[1].canisterId),
-                        canisterName: cani[1].canisterName,
-                        status: _status,
-                        owner: principalToText(cani[1].owner),
-                        imageId: Number(cani[1].imageId),
-                    }
+                let _init = [
+                    { canisterId: "-1", canisterLabel: "Request new Canister", heading: true, style: 'text-primary' },
+                    { canisterId: "0", heading: false, canisterLabel: "Install to new canister (initialization fee will apply)" },
+                    { canisterId: "-1", canisterLabel: "Or Re-Install to existed Canister - Becareful!!!", heading: true, style: 'text-danger'}
+                ]
+                _myCanisters.forEach( cani =>{
+                    _init.push(cani)
                 })
-                console.log('this.myCanisters: ', this.myCanisters)
-            }
+                this.myCanisters = _init;
+            },
+            setSelected(obj){
+                if(obj.canisterId != "0"){ //Get old name
+                    this.canisterName = obj.canisterName;
+                }else{
+                    this.canisterName = '';
+                }
+            },
+            selectableOption( option ) { return option.heading != true; }
         },
         mounted() {
             EventBus.on("showDeployModal", obj => {
@@ -141,52 +148,65 @@
                     <form @submit.prevent="handleDeploy">
                         <div class="pl-10">
                             <div class="row gy-4">
-                                <div class="col-sm-6">
+                                <div class="col-sm-8">
                                     <div class="form-group">
                                         <label class="form-label text-danger">
-                                            Choose canister ID  <IconRequired /> &nbsp;
+                                            Choose canister ID <IconRequired /> &nbsp;
                                             <button type="button" class="btn btn-xs btn-light" @click.stop="getMyCanister">Refresh <i class="icon ni ni-reload"></i></button>
                                         </label>
                                         <div class="form-control-wrap">
-                                            <select class="form-select" name="canister_id" v-if="myCanisters">
-                                                <option value="0">Install to new canister (initialization fee will apply)</option>
-                                                <optgroup label="Reinstall to existed canister - Danger!!!">
-                                                    <option :value="canister.canisterId" v-for="canister in myCanisters">
-                                                        {{canister.canisterName}}: {{canister.canisterId}} ({{canister.status}})
-                                                    </option>
-                                                </optgroup>
-                                            </select>
+                                            <v-select :getOptionKey="canister => canister.canisterId" v-model="canisterSelected" :reduce="canister => canister.canisterId" label="canisterLabel" :options="myCanisters" :clearable="false" @option:selected="setSelected" :selectable="selectableOption" v-if="myCanisters" >
+                                                <template #option="{ canisterLabel, style, heading, canisterId }" :getOptionKey="canisterId" >
+                                                    <p v-if="heading" :class="`mb-0 ${style}`">{{ canisterLabel }}</p>
+                                                    <span v-else :class="`ms-3 fs-13px ${style}`">{{ canisterLabel }}</span>
+                                                </template>
+                                            </v-select>
+<!--                                            <select class="form-select" name="canister_id" v-if="myCanisters">-->
+<!--                                                <option value="0">Install to new canister (initialization fee will apply)</option>-->
+<!--                                                <optgroup label="Reinstall to existed canister - Danger!!!">-->
+<!--                                                    <option :value="canister.canisterId" v-for="canister in myCanisters">-->
+<!--                                                        {{canister.canisterName}}: {{canister.canisterId}} ({{canister.status}})-->
+<!--                                                    </option>-->
+<!--                                                </optgroup>-->
+<!--                                            </select>-->
                                             <div v-else class="form-select">
                                                 <span class="spinner-border spinner-border-sm" role="status"></span> Loading your canisters...
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-sm-6">
+                                <div class="col-sm-4">
                                     <div class="form-group">
                                         <label class="form-label" for="canister_name">Custom canister name: <IconRequired /></label>
                                         <div class="form-control-wrap">
-                                            <input type="text" class="form-control" id="canister_name" name="canister_name" placeholder="Ex: Canister for ICRC Token">
+                                            <input type="text" class="form-control" id="canister_name" v-model="canisterName" placeholder="Ex: Canister for ICRC Token">
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                            <div class="row pt-1" v-if="canisterSelected != 0">
+                                <div class="col-sm-12">
+                                    <div class="alert alert-fill alert-warning alert-icon">
+                                        <em class="icon ni ni-alert-circle"></em>
+                                        You are choosing to reinstall on the <strong>existed</strong> canister. This action will delete all existing data on this canister and replace it with a fresh install of this image. Check your canister <a :href="config.IC_SCAN+canisterSelected" class="alert-link" target="_blank">{{canisterSelected}}</a> <em class="icon ni ni-external"></em> on IC Scan again for make sure you know what you're doing!
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <hr class="preview-hr">
-                        <TokenForm v-if="canisterImage.category ==0"></TokenForm>
-                        <NftForm v-else-if="canisterImage.category == 1"></NftForm>
-                        <ThresholdForm v-else-if="canisterImage.category == 2"></ThresholdForm>
-                        <AxonForm v-else-if="canisterImage.category == 3"></AxonForm>
+                        <hr class="preview-hr mb-3 mt-3">
+                        <TokenForm v-if="canisterImage.code =='ICRC-1'"></TokenForm>
+                        <DIP20Form v-if="canisterImage.code =='DIP20'"></DIP20Form>
+                        <NftForm v-else-if="canisterImage.code == 'EXT-NFT'"></NftForm>
+                        <ThresholdForm v-else-if="canisterImage.code == 'Threshold'"></ThresholdForm>
+                        <AxonForm v-else-if="canisterImage.code == 'Axon'"></AxonForm>
 
-                        <div class="pl-10 pt-3">
+                        <div class="pl-10">
                             <div class="row gy-4">
                                 <div class="col-sm-12 text-center">
-                                    <button type="submit" class="btn btn-primary">
-                                        Deploy &nbsp; <em class="icon ni ni-upload-cloud"></em>
-                                    </button>
-                                    &nbsp;
-                                    <button type="button" class="btn btn-danger">
-                                        Start over &nbsp; <em class="icon ni ni-reload"></em>
+
+
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        Start Deploy &nbsp; <em class="icon ni ni-upload-cloud"></em>
                                     </button>
                                 </div>
                             </div>

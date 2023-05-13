@@ -4,7 +4,7 @@
 <template>
     <div class="pl-10 pb-3">
         <div class="row gy-4">
-            <input type="hidden" name="token_standard" value="ICRC-1">
+            <input type="hidden" name="token_standard" value="DIP20">
             <div class="col-sm-6">
                 <div class="form-group">
                     <label class="form-label" for="tokenName">Token Name <IconRequired /></label>
@@ -21,11 +21,27 @@
                     </div>
                 </div>
             </div>
+            <div class="col-sm-12">
+                <div class="form-group">
+                    <label class="form-label" for="tokenLogo">Token logo (best size: 200x200) <IconRequired /></label>
+                    <div class="form-control-wrap">
+                        <input type="file" class="form-control" name="token_logo" id="tokenLogo" placeholder="Choose Token Logo" required>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label class="form-label" for="totalSupply">Total supply <IconRequired /></label>
+                    <div class="form-control-wrap">
+                        <input type="number" class="form-control" id="totalSupply" name="total_supply" placeholder="100_000_000" required>
+                    </div>
+                </div>
+            </div>
             <div class="col-sm-6">
                 <div class="form-group">
                     <label class="form-label" for="decimals">Decimals <IconRequired /></label>
                     <div class="form-control-wrap">
-                        <input type="number" class="form-control" id="decimals" placeholder="8" disabled>
+                        <input type="number" class="form-control" id="decimals" name="decimals" placeholder="8" value="8" required>
                     </div>
                 </div>
             </div>
@@ -37,7 +53,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-sm-12">
+            <div class="col-sm-6">
                 <div class="form-group">
                     <label class="form-label" for="principal_address">Token Owner (Principal) <IconRequired /></label>
                     <div class="form-control-wrap">
