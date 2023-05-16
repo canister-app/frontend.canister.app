@@ -1,5 +1,24 @@
-<script setup>
+<script>
     import IconRequired from '../../icons/IconRequired.vue'
+    import { Money3Component } from "v-money3";
+    export default {
+        components: {IconRequired, money3: Money3Component },
+        computed:{
+            config_mask() {
+                return {
+                    decimal: ".",
+                    thousands: ",",
+                    prefix: "",
+                    suffix: "",
+                    precision: 0,
+                    modelModifiers: {
+                        number: true,
+                    },
+                    masked: false /* doesn't work with directive */,
+                };
+            },
+        },
+    }
 </script>
 <template>
     <div class="pl-10 pb-3">
@@ -33,7 +52,7 @@
                 <div class="form-group">
                     <label class="form-label" for="transfer_fee">Transfer fee ($TOKEN) <IconRequired /></label>
                     <div class="form-control-wrap">
-                        <input type="number" class="form-control" id="transfer_fee" name="transfer_fee" placeholder="0.0001" required>
+                        <money3 type="text" :precision="6" class="form-control" id="transfer_fee" name="transfer_fee" placeholder="0.0001" required />
                     </div>
                 </div>
             </div>

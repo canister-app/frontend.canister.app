@@ -64,10 +64,10 @@ class WalletManager {
                     (async () => {
                         const connected = await window?.ic?.plug.isConnected();
                         if (connected) {
-                            console.log('check 11111111 timee')
                             if (!window.ic.plug.agent) {
                                 await window.ic.plug.createAgent({
                                     whitelist: config.CANISTER_WHITE_LIST,
+                                    host: config.IC_ENDPOINT
                                 });
                             }
                             var pid = await window.ic.plug.agent.getPrincipal();
@@ -220,7 +220,7 @@ class WalletManager {
         this.connectLoading();
         const whitelist = config.CANISTER_WHITE_LIST;
         // Host
-        const host = "https://boundary.ic0.app/";
+        const host = config.IC_ENDPOINT;
         // Make the request
 
         try {

@@ -1,4 +1,4 @@
-export const idlFactory = ({ IDL }) => {
+export default ({ IDL }) => {
     const Value = IDL.Variant({
         'Int' : IDL.Int,
         'Nat' : IDL.Nat,

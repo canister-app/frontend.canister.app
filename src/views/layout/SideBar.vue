@@ -12,13 +12,13 @@
                     </router-link>
                     <ul class="nk-menu-sub">
                         <li class="nk-menu-item">
-                            <a href="/store?sort=deploy" class="nk-menu-link"><span class="nk-menu-text">Top Deploy</span></a>
+                            <router-link to="/store?sort=deploy" class="nk-menu-link"><span class="nk-menu-text">Top Deploy</span></router-link>
                         </li>
                         <li class="nk-menu-item">
-                            <a href="/store?sort=paid" class="nk-menu-link"><span class="nk-menu-text">Top Paid</span></a>
+                            <router-link to="/store?sort=paid" class="nk-menu-link"><span class="nk-menu-text">Top Paid</span></router-link>
                         </li>
                         <li class="nk-menu-item">
-                            <a href="/store?sort=free" class="nk-menu-link"><span class="nk-menu-text">Top Free</span></a>
+                            <router-link to="/store?sort=free" class="nk-menu-link"><span class="nk-menu-text">Top Free</span></router-link>
                         </li>
                     </ul><!-- .nk-menu-sub -->
                 </li><!-- .nk-menu-item -->

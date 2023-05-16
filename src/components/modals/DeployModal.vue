@@ -13,7 +13,23 @@
     import AxonForm from "./forms/AxonForm.vue";
     import IconRequired from "../icons/IconRequired.vue";
     import {principalToText} from "../../IC/utils";
-
+    import { format, unformat } from 'v-money3';
+    const mask_option =  {
+        decimal: ".",
+        thousands: ",",
+        prefix: "",
+        suffix: "",
+        precision: 0,
+        masked: false /* doesn't work with directive */,
+    };
+    const mask_option_fee =  {
+        decimal: ".",
+        thousands: ",",
+        prefix: "",
+        suffix: "",
+        precision: 6,
+        masked: false /* doesn't work with directive */,
+    };
     export default {
         components: { VueFinalModal, DIP20Form, TokenForm, NftForm, ThresholdForm, AxonForm, IconRequired },
         data() {
@@ -37,7 +53,16 @@
                 let _multiInput = [];
                 for (const [inputName, value] of formData) {
                     if(isMultiInput(inputName) == null){
-                        _formData[inputName] = value;
+                        if(inputName == 'total_supply'){
+                            console.log('total_supply', unformat(value, mask_option));
+                            _formData[inputName] = unformat(value, mask_option);
+                        }else if(inputName == 'transfer_fee'){
+                            console.log('transfer_fee', unformat(value, mask_option_fee));
+                            _formData[inputName] = unformat(value, mask_option_fee);
+                        }else{
+                            _formData[inputName] = value;
+                        }
+
                     }else{
                         _multiInput.push(textToPrincipal(value));//dynamic principal input
                     }
@@ -59,7 +84,6 @@
                             if(this.canisterSelected == "0"){
                                 showLoading('Requesting new canister, please wait...');
                                 let _result = await CanisterManager.requestNewCanister(this.canisterName); //request new canister
-                                console.log('create canister', _result)
                                 if("ok" in _result){
                                     await this.deploy(principalToText(_result.ok), this.canisterName, "install", _formData)
                                 }else{
@@ -79,17 +103,16 @@
             },
             async deploy(targetCanister, canisterName, installMode, formData){
                 let _args = await CanisterManager.createInitParams(formData);
-                console.log('targetCanister: ', targetCanister);
                 showLoading('Deploying data to canister <a href="javascript:void(0)">'+targetCanister+'</a>, please wait...');
 
                 let result = await CanisterManager.handleDeploy(targetCanister, canisterName, installMode, this.canisterImage.imageId, _args);
-                console.log('result: ', result);
                 if("ok" in result){
                     window.Swal.fire({
                         icon: 'success',
                         title: 'Success',
-                        html: '<p>Your canister successfully deployed.</p><p>Canister ID: <a href="'+config.IC_SCAN+targetCanister+'" target="_blank">'+targetCanister+'</a> <em class="icon ni ni-external"></em>',
+                        html: '<p>Your canister successfully deployed.</p><p>Manage your canister: <a href="/my-canister/'+targetCanister+'">'+targetCanister+'</a></p><p>View on ICScan: <a href="'+config.IC_SCAN+targetCanister+'" target="_blank">'+targetCanister+'</a> <em class="icon ni ni-external"></em>',
                     })
+                    await this.getMyCanister();//Reload my canister
                 }else{
                     window.Swal.fire({
                         icon: 'error',
@@ -145,7 +168,7 @@
                     <h5 class="modal-title" v-if="canisterImage">Deploy canister with <span class="text-blue">{{canisterImage.name}}</span> image</h5>
                 </div>
                 <div class="modal-body pt-3" v-if="canisterImage">
-                    <form @submit.prevent="handleDeploy">
+                    <form @submit.prevent="handleDeploy" class="mb-0">
                         <div class="pl-10">
                             <div class="row gy-4">
                                 <div class="col-sm-8">
@@ -203,8 +226,6 @@
                         <div class="pl-10">
                             <div class="row gy-4">
                                 <div class="col-sm-12 text-center">
-
-
                                     <button type="submit" class="btn btn-primary btn-block">
                                         Start Deploy &nbsp; <em class="icon ni ni-upload-cloud"></em>
                                     </button>

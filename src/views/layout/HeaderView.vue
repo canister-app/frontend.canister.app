@@ -1,3 +1,4 @@
+import {walletData} from "../../services/store";
 <script setup>
     import { walletData } from "@/services/store.js";
     import {StoicIdentity} from "ic-stoic-identity";
@@ -102,7 +103,12 @@
                 </div>
                 <div class="nk-header-tools">
                     <ul class="nk-quick-nav">
-                        <li class="dropdown notification-dropdown">
+                        <li class="">
+                            <a href="javascript:void(0)" class="dark-switch-btn nk-quick-nav-icon">
+                                <div class="icon-status icon-status-na"><em class="icon ni ni-moon"></em></div>
+                            </a>
+                        </li>
+                        <li class="dropdown notification-dropdown" v-show="walletData.principal">
                             <a href="#" class="dropdown-toggle nk-quick-nav-icon" data-bs-toggle="dropdown">
                                 <div class="icon-status icon-status-info"><em class="icon ni ni-bell"></em></div>
                             </a>
@@ -118,37 +124,37 @@
                                                 <em class="icon icon-circle bg-primary-dim ni ni-share"></em>
                                             </div>
                                             <div class="nk-notification-content">
-                                                <div class="nk-notification-text">Iliash shared <span>Dashlite-v2</span> with you.</div>
+                                                <div class="nk-notification-text">Canister <span>ICRC-1</span> created.</div>
                                                 <div class="nk-notification-time">Just now</div>
                                             </div>
                                         </div>
-                                        <div class="nk-notification-item dropdown-inner">
-                                            <div class="nk-notification-icon">
-                                                <em class="icon icon-circle bg-info-dim ni ni-edit"></em>
-                                            </div>
-                                            <div class="nk-notification-content">
-                                                <div class="nk-notification-text">Iliash <span>invited</span> you to edit <span>DashLite</span> folder</div>
-                                                <div class="nk-notification-time">2 hrs ago</div>
-                                            </div>
-                                        </div>
-                                        <div class="nk-notification-item dropdown-inner">
-                                            <div class="nk-notification-icon">
-                                                <em class="icon icon-circle bg-primary-dim ni ni-share"></em>
-                                            </div>
-                                            <div class="nk-notification-content">
-                                                <div class="nk-notification-text">You have shared <span>project v2</span> with Parvez.</div>
-                                                <div class="nk-notification-time">7 days ago</div>
-                                            </div>
-                                        </div>
-                                        <div class="nk-notification-item dropdown-inner">
-                                            <div class="nk-notification-icon">
-                                                <em class="icon icon-circle bg-success-dim ni ni-spark"></em>
-                                            </div>
-                                            <div class="nk-notification-content">
-                                                <div class="nk-notification-text">Your <span>Subscription</span> renew successfully.</div>
-                                                <div class="nk-notification-time">2 month ago</div>
-                                            </div>
-                                        </div>
+<!--                                        <div class="nk-notification-item dropdown-inner">-->
+<!--                                            <div class="nk-notification-icon">-->
+<!--                                                <em class="icon icon-circle bg-info-dim ni ni-edit"></em>-->
+<!--                                            </div>-->
+<!--                                            <div class="nk-notification-content">-->
+<!--                                                <div class="nk-notification-text">Iliash <span>invited</span> you to edit <span>DashLite</span> folder</div>-->
+<!--                                                <div class="nk-notification-time">2 hrs ago</div>-->
+<!--                                            </div>-->
+<!--                                        </div>-->
+<!--                                        <div class="nk-notification-item dropdown-inner">-->
+<!--                                            <div class="nk-notification-icon">-->
+<!--                                                <em class="icon icon-circle bg-primary-dim ni ni-share"></em>-->
+<!--                                            </div>-->
+<!--                                            <div class="nk-notification-content">-->
+<!--                                                <div class="nk-notification-text">You have shared <span>project v2</span> with Parvez.</div>-->
+<!--                                                <div class="nk-notification-time">7 days ago</div>-->
+<!--                                            </div>-->
+<!--                                        </div>-->
+<!--                                        <div class="nk-notification-item dropdown-inner">-->
+<!--                                            <div class="nk-notification-icon">-->
+<!--                                                <em class="icon icon-circle bg-success-dim ni ni-spark"></em>-->
+<!--                                            </div>-->
+<!--                                            <div class="nk-notification-content">-->
+<!--                                                <div class="nk-notification-text">Your <span>Subscription</span> renew successfully.</div>-->
+<!--                                                <div class="nk-notification-time">2 month ago</div>-->
+<!--                                            </div>-->
+<!--                                        </div>-->
                                     </div><!-- .nk-notification -->
                                 </div><!-- .nk-dropdown-body -->
                                 <div class="dropdown-foot center">
@@ -232,12 +238,13 @@
                         <li v-if="!walletData.isLogged">
                             <a href="javascript:void(0)" @click="btnLogin()" class="btn btn-wider btn-primary"><em class="icon ni ni-wallet"></em> <span>Wallet</span></a>
                         </li>
+
                         <li class="dropdown user-dropdown" v-show="walletData.principal">
 
                             <a href="#" class="dropdown-toggle me-n1" data-bs-toggle="dropdown">
                                 <div class="user-toggle">
                                     <div class="user-avatar sm">
-                                        <em class="icon ni ni-user-alt"></em>
+                                        <img :src="`/partner/${walletData.isLogged}.png`" :alt="walletData.isLogged">
                                     </div>
                                 </div>
                             </a>
@@ -245,10 +252,10 @@
                                 <div class="dropdown-inner user-card-wrap bg-lighter d-none d-md-block">
                                     <div class="user-card">
                                         <div class="user-avatar">
-                                            <span>IC</span>
+                                            <img :src="`/partner/${walletData.isLogged}.png`" :alt="walletData.isLogged">
                                         </div>
                                         <div class="user-info">
-                                            <span class="lead-text">Main Account</span>
+                                            <span class="lead-text">{{walletData.account.name}}</span>
                                             <span class="sub-text"> {{walletData.txtPrincipal.slice(0,10)+'...'+walletData.txtPrincipal.slice(-10)}}</span>
                                         </div>
                                     </div>
@@ -258,12 +265,12 @@
                                         <li><a href="/my-profile"><em class="icon ni ni-wallet"></em><span>My Wallet</span></a></li>
                                         <li><a href="/my-account-setting"><em class="icon ni ni-setting-alt"></em><span>Account Setting</span></a></li>
                                         <li><a href="/my-profile-activity"><em class="icon ni ni-activity-alt"></em><span>Login Activity</span></a></li>
-                                        <li><a class="dark-switch" href="#"><em class="icon ni ni-moon"></em><span>Dark Mode</span></a></li>
+                                        <li><a class="dark-switch" href="javascript:void(0)"><em class="icon ni ni-moon"></em><span>Dark Mode</span></a></li>
                                     </ul>
                                 </div>
                                 <div class="dropdown-inner">
                                     <ul class="link-list">
-                                        <li><a href="#" @click="btnLogout()"><em class="icon ni ni-signout"></em><span>Sign out</span></a></li>
+                                        <li><a href="javascript:void(0)" @click="btnLogout()"><em class="icon ni ni-signout"></em><span>Sign out</span></a></li>
                                     </ul>
                                 </div>
                             </div>

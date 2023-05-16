@@ -4,6 +4,9 @@ import { walletData } from "../services/store";
 // Imports and re-exports candid interface
 import canic from './candid/canic.did.js';
 
+//Import standard IDL
+import ICRC1 from './candid/icrc1.did.js';
+import DIP20 from './candid/dip20.did.js';
 import ledgerIDL from './candid/ledger.did.js';
 import governanceIDL from './candid/governance.did.js';
 import canisterManager from './candid/canisterManager.did.js';
@@ -16,6 +19,8 @@ const LEDGER_CANISTER_ID = "ryjl3-tyaaa-aaaaa-aaaba-cai";
 
 const _preloadedIdls = {
     'ledger' : LEDGER_CANISTER_ID,
+    'ICRC-1' : ICRC1,
+    'DIP20' : DIP20,
 };
 class ExtensionActor {
     _canister = false;
@@ -81,23 +86,19 @@ class ICnetwork {
                 let _targetType = walletData.isLogged == "bitfinity"?"bitfinityWallet":"plug";
                 this._canisters[cid] = new ExtensionActor(cid, idl, _targetType);
             } else {
-                if(config.ENV == "development") {
-                    console.log('Fetchroot development')
-                    this._agent.fetchRootKey().catch(err=>{
-                        console.warn("Unable to fetch root key. Check to ensure that your local replica is running");
-                        console.error(err);
-                    });
-                }
                 this._canisters[cid] = Actor.createActor(idl, {agent : this._agent, canisterId : cid});
             }
         }
         return this._canisters[cid];
     }
 
-
     _makeAgent() {
         if (window?.ic?.plug?.agent) {
             this._agent = window.ic.plug.agent;
+            if(config.ENV == "development") {
+                window.ic?.plug.sessionManager.sessionData?.agent.fetchRootKey()
+            }
+
         } else if (window?.ic?.bitfinityWallet?.agent) {
             this._agent = window.ic.bitfinityWallet.agent;
         } else {
@@ -105,6 +106,12 @@ class ICnetwork {
             if (this._identity) args['identity'] = this._identity;
             if (this._host) args['host'] = this._host;
             this._agent = new HttpAgent(args);
+            if(config.ENV == "development") {
+                this._agent.fetchRootKey().catch(err=>{
+                    console.warn("Unable to fetch root key. Check to ensure that your local replica is running");
+                    console.error(err);
+                });
+            }
         }
     }
 }
@@ -157,7 +164,7 @@ export const _apiHandle = {
 //         }
 //     });
 export default {
-    connect : (host, identity) => new ICnetwork(host ? host : config.IC_ENPOINT, identity),
+    connect : (host, identity) => new ICnetwork(host ? host : config.IC_ENDPOINT, identity),
     getFolder,
     createFolder,
     whoami,

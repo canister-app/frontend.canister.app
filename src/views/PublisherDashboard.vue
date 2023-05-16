@@ -243,7 +243,7 @@
             }
         },
         mounted() {
-            this.api = _apiHandler.connect(config.IC_ENPOINT);
+            this.api = _apiHandler.connect(config.IC_ENDPOINT);
             this.getMembers();
             this.getCategory();
             this.getTemplates();
@@ -253,230 +253,259 @@
     }
 </script>
 <template>
-    <section class="container pb-70">
-        <div class="row p-b-10">
-            <div class="col-lg-9 mx-auto">
-                <div class="create-content-box">
-                    <div class="section-head-sm">
-                        <h3 class="mt-2 text-danger"><em class="ni ni-setting"></em> Setting</h3>
-                    </div>
-                    <div class="create-content-box">
-
-                        <ul class="nav nav-tabs nav-tabs-s1" id="myTab" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="on-sale" aria-selected="true"><span class="ni ni-block-over"></span> Overview </button>
-                            </li>
-                            <li class="nav-item " role="presentation">
-                                <button class="nav-link" id="template-tab" data-bs-toggle="tab" data-bs-target="#template" type="button" role="tab" aria-controls="owned" aria-selected="false"><span class="ni ni-box"></span> Canister Template </button>
-                            </li>
-                            <li class="nav-item " role="presentation">
-                                <button class="nav-link" id="canister-tab" data-bs-toggle="tab" data-bs-target="#canister" type="button" role="tab" aria-controls="owned" aria-selected="false"><span class="ni ni-box"></span> Canister Manager </button>
-                            </li>
-
-                        </ul>
-                        <div class="gap-2x"></div>
-                        <div class="tab-content" id="myTabContent">
-                            <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
-                                <div class=" mt-2">
-                                    <h5 class="sub-title">Manage admin:</h5>
-                                    <input class="form-control input-sm mb-2" id="input_member" placeholder="input principal here" size=60 />
-                                    <button id="btn_add_member" class="btn btn-sm btn-info">Add member</button> <button id="btn_del_member" class="btn btn-sm btn-danger">Delete member</button>
-                                </div>
-                                <div class="form-item mt-2">
-                                    <h5 class="sub-title">Admin List:</h5>
-                                    <button @click="getMembers" class="btn btn-sm btn-outline-secondary mb-2">Refresh</button>
-                                    <section id="members"></section>
-                                    <ul>
-                                        <li v-for="(member, idx) in members" v-bind:key="idx">
-                                            {{member}}
-                                        </li>
+    <div class="container-fluid">
+        <div class="nk-content-inner">
+            <div class="nk-content-body">
+                <div class="nk-block-head nk-block-head-sm">
+                    <div class="nk-block-between g-3">
+                        <div class="nk-block-head-content">
+                            <h3 class="nk-block-title page-title">Publisher Dashboard</h3>
+                            <div class="nk-block-des text-soft">
+                                <p>Publish your images.</p>
+                            </div>
+                        </div><!-- .nk-block-head-content -->
+                        <div class="nk-block-head-content">
+                            <div class="toggle-wrap nk-block-tools-toggle">
+                                <a href="#" class="btn btn-icon btn-trigger toggle-expand me-n1" data-target="pageMenu"><em class="icon ni ni-menu-alt-r"></em></a>
+                                <div class="toggle-expand-content" data-content="pageMenu">
+                                    <ul class="nk-block-tools g-3">
+                                        <li><router-link to="/store" class="btn btn-primary"><em class="icon ni ni-plus"></em><span>Create new</span></router-link></li>
                                     </ul>
                                 </div>
-                                ------------------------------------------------------------------
-
-
                             </div>
+                        </div><!-- .nk-block-head-content -->
+                    </div><!-- .nk-block-between -->
+                </div><!-- .nk-block-head -->
 
-                            <div class="tab-pane fade show" id="template" role="tabpanel" aria-labelledby="template-tab">
-                                <div class="form-item mt-2">
-                                    <section>
-                                        <h5 class=" mb-2">Template List:</h5>
-                                        <button class="btn btn-sm btn-outline-secondary" @click="getTemplates">Refresh</button>
-                                    </section>
-                                    <section>
-                                        <table class="table table-sm">
-                                            <thead>
-                                            <tr><th>#</th><th>Code / Name / Description</th><th>Action</th></tr>
-                                            </thead>
-                                            <tbody v-if="templates">
-                                            <tr v-for="(template, idx) in templates" v-bind:key="idx">
-                                                <td>{{template.template_id}}.</td>
-                                                <td>
-                                                    <span :class="`standard_format format_default label-token ${config.CANISTER_IMAGE_CATEGORY[template.template.category]}`">{{config.CANISTER_IMAGE_CATEGORY[template.template.category]}}</span> {{template.template.code}} / {{template.template.name}}
-                                                    <div class="small">
-                                                        {{template.template.brief}}</div>
-                                                    <div class="small">Created: {{moment(Number(template.template.time)/1000000).format("lll")}}</div>
-                                                </td>
-                                                <td>
-                                                    <div class="btn-group" role="group" aria-label="Action">
-                                                        <button class="btn btn-sm btn-warning" @click="editTemplate(template)">Edit</button>
-                                                        <button class="btn btn-sm btn-danger" @click="deleteTemplate(template)">Delete</button>
+                <div class="nk-block">
+                    <div class="card card-bordered card-stretch">
+                        <div class="card-inner-group">
+                            <div class="card-inner">
+                                <div class="row">
+                                    <div class="col-lg-12 mx-auto">
+                                        <div class="create-content-box">
+                                            <div class="create-content-box">
+                                                <ul class="nav nav-tabs nav-tabs-s1" id="myTab" role="tablist">
+                                                    <li class="nav-item" role="presentation">
+                                                        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="on-sale" aria-selected="true"><span class="ni ni-block-over"></span> Overview </button>
+                                                    </li>
+                                                    <li class="nav-item " role="presentation">
+                                                        <button class="nav-link" id="template-tab" data-bs-toggle="tab" data-bs-target="#template" type="button" role="tab" aria-controls="owned" aria-selected="false"><span class="ni ni-box"></span> Canister Template </button>
+                                                    </li>
+                                                    <li class="nav-item " role="presentation">
+                                                        <button class="nav-link" id="canister-tab" data-bs-toggle="tab" data-bs-target="#canister" type="button" role="tab" aria-controls="owned" aria-selected="false"><span class="ni ni-box"></span> Canister Manager </button>
+                                                    </li>
+
+                                                </ul>
+                                                <div class="gap-2x"></div>
+                                                <div class="tab-content" id="myTabContent">
+                                                    <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+                                                        <div class=" mt-2">
+                                                            <h5 class="sub-title">Manage admin:</h5>
+                                                            <input class="form-control input-sm mb-2" id="input_member" placeholder="input principal here" size=60 />
+                                                            <button id="btn_add_member" class="btn btn-sm btn-info">Add member</button> <button id="btn_del_member" class="btn btn-sm btn-danger">Delete member</button>
+                                                        </div>
+                                                        <div class="form-item mt-2">
+                                                            <h5 class="sub-title">Admin List:</h5>
+                                                            <button @click="getMembers" class="btn btn-sm btn-outline-secondary mb-2">Refresh</button>
+                                                            <section id="members"></section>
+                                                            <ul>
+                                                                <li v-for="(member, idx) in members" v-bind:key="idx">
+                                                                    {{member}}
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                        ------------------------------------------------------------------
+
+
                                                     </div>
-                                                </td>
-                                            </tr>
-                                            </tbody>
-                                        </table>
-                                    </section>
-                                </div>
 
-                                <div class="">
-                                    <h5>Create new Image:</h5>
-                                    <div class="form-item mb-4">
-                                        <div class="mb-3">
-                                            <label class="mb-2 form-label">Image Name:</label>
-                                            <input type="text" class="form-control form-control-s1" placeholder="Template name..." v-model="template_name" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="mb-2 form-label">Image Code:</label>
-                                            <input type="text" class="form-control form-control-s1" placeholder="ICRC-1" v-model="template_code" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="mb-2 form-label">Price:</label>
-                                            <input type="text" class="form-control form-control-s1" placeholder="Set 0 for free" v-model="template_price" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="mb-2 form-label">Image Repo:</label>
-                                            <input type="text" class="form-control form-control-s1" placeholder="github.com" v-model="template_repo" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="mb-2 form-label">Image Category:</label>
-                                            <select v-model="template_category" class="form-control">
-                                                <option v-for="(cat, idx) in categories" v-bind:key="idx" :value="cat.category_id" :selected="cat.category_id == 0">{{cat.name}}</option>
-                                            </select>
-                                        </div>
-                                        <div class="mb-3">
-                                            Wasm file : <input type="file" class="form-control input-sm" id="file"  @change="handleFileUpload( $event )" />
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="mb-2 form-label">Brief:</label>
-                                            <textarea name="brief" rows="1" class="form-control" placeholder="Short intro..." v-model="template_brief" required></textarea>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="mb-2 form-label">Description:</label>
-                                            <div class="card">
-                                            <QuillEditor ref="myEditor" theme="snow" />
+                                                    <div class="tab-pane fade show" id="template" role="tabpanel" aria-labelledby="template-tab">
+                                                        <div class="form-item mt-2">
+                                                            <section>
+                                                                <h5 class=" mb-2">Canister Images:</h5>
+                                                                <button class="btn btn-sm btn-outline-secondary" @click="getTemplates">Refresh</button>
+                                                            </section>
+                                                            <section>
+                                                                <table class="table table-sm">
+                                                                    <thead>
+                                                                    <tr><th>#</th><th>Code / Name / Description</th><th>Action</th></tr>
+                                                                    </thead>
+                                                                    <tbody v-if="templates">
+                                                                    <tr v-for="(template, idx) in templates" v-bind:key="idx">
+                                                                        <td>{{template.template_id}}.</td>
+                                                                        <td>
+                                                                            <span :class="`standard_format format_default label-token ${config.CANISTER_IMAGE_CATEGORY[template.template.category]}`">{{config.CANISTER_IMAGE_CATEGORY[template.template.category]}}</span> {{template.template.code}} / {{template.template.name}}
+                                                                            <div class="small">
+                                                                                {{template.template.brief}}</div>
+                                                                            <div class="small">Created: {{moment(Number(template.template.time)/1000000).format("lll")}}</div>
+                                                                        </td>
+                                                                        <td>
+                                                                            <div class="btn-group" role="group" aria-label="Action">
+                                                                                <button class="btn btn-sm btn-warning" @click="editTemplate(template)">Edit</button>
+                                                                                <button class="btn btn-sm btn-danger" @click="deleteTemplate(template)">Delete</button>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </section>
+                                                        </div>
+<hr>
+                                                        <div class="pt-3">
+                                                            <h5>Create new canister image:</h5>
+                                                            <div class="form-item mb-4">
+                                                                <div class="mb-3">
+                                                                    <label class="mb-2 form-label">Image Name:</label>
+                                                                    <input type="text" class="form-control form-control-s1" placeholder="Template name..." v-model="template_name" required>
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label class="mb-2 form-label">Image Code:</label>
+                                                                    <input type="text" class="form-control form-control-s1" placeholder="ICRC-1" v-model="template_code" required>
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label class="mb-2 form-label">Price:</label>
+                                                                    <input type="text" class="form-control form-control-s1" placeholder="Set 0 for free" v-model="template_price" required>
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label class="mb-2 form-label">Image Repo:</label>
+                                                                    <input type="text" class="form-control form-control-s1" placeholder="github.com" v-model="template_repo" required>
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label class="mb-2 form-label">Image Category:</label>
+                                                                    <select v-model="template_category" class="form-control">
+                                                                        <option v-for="(cat, idx) in categories" v-bind:key="idx" :value="cat.category_id" :selected="cat.category_id == 0">{{cat.name}}</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    Wasm file : <input type="file" class="form-control input-sm" id="file"  @change="handleFileUpload( $event )" />
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label class="mb-2 form-label">Brief:</label>
+                                                                    <textarea name="brief" rows="1" class="form-control" placeholder="Short intro..." v-model="template_brief" required></textarea>
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label class="mb-2 form-label">Description:</label>
+                                                                    <div class="card">
+                                                                    <QuillEditor ref="myEditor" theme="snow" />
+                                                                    </div>
+                        <!--                                            <textarea name="message" rows="2" class="form-control form-control-s1" placeholder="About this template - WASM module..." v-model="template_description" required></textarea>-->
+                                                                </div>
+
+                                                                <button class="btn btn-sm btn-danger mb-2" @click="createTemplate">Create Image</button>
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+
+                                                    <div class="tab-pane fade" id="canister" role="tabpanel" aria-labelledby="canister-tab">
+
+
+                                                        <div class="">
+                                                            <h5>Create a new canister: </h5>
+                                                            <button id="btn_create_canister" class="btn btn-sm btn-danger" @click="createCanister">Request New Canister</button>
+                                                        </div>
+                                                        <div class="form-item mt-2">
+                                                            <h5>Canister control:</h5>
+                                                            <!--                <div>-->
+                                                            <!--                  Proposal content : <input class="form-control input-sm" id="input_proposal_text" v-model="proposalText" placeholder="input proposal content" size=30 />-->
+                                                            <!--                </div>-->
+                                                            <div class="mt-2">
+                                                                Action :
+                                                                <select v-model="selectList" class="form-control" required>
+                                                                    <option value="install" selected>Install Code</option>
+                                                                    <option value="reinstall" selected>Re-Install Code</option>
+                                                                    <option value="start">Start</option>
+                                                                    <option value="stop">Stop</option>
+                                                                    <option value="delete">Delete</option>
+                                                                </select>
+                                                            </div>
+                                                            <div>
+                                                                Template :
+                                                                <select v-model="canister_template" class="form-control" required>
+                                                                    <option v-for="(template, idx) in templates" v-bind:key="idx" :value="template.template_id">{{template.template.name}}</option>
+                                                                </select>
+                                                            </div>
+                                                            <!--                <div>-->
+                                                            <!--                  Wasm file : <input type="file" class="form-control input-sm" id="file"  @change="handleFileUpload( $event )" />-->
+                                                            <!--                </div>-->
+                                                            <div class="mb-2">
+                                                                Install Argument : <input class="form-control input-sm" v-model="installArgument" placeholder="principal aaaaa-aa" size=60 />
+                                                            </div>
+                                                            <div class="mb-2">
+                                                                Target Canister : <input class="form-control input-sm" v-model="targetCanister" placeholder="input target canister" size=60 required />
+                                                            </div>
+                                                            <button class="btn btn-sm btn-danger mb-2" @click="createProposal">Excute</button>
+                                                        </div>
+                                                        <div class="form-item mt-2">
+                                                            <section>
+                                                                <h5 class=" mb-2">Canister List:</h5>
+                                                                <button id="refresh_canister" class="btn btn-sm btn-outline-secondary" @click="getCanisters">Refresh canisters</button>
+                                                            </section>
+                                                            <section>
+                                                                <table class="table table-sm">
+                                                                    <thead>
+                                                                    <tr><th>#</th><th>Canister</th><th>Status</th><th>Action</th></tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                    <tr v-for="(canister, idx) in canisters" v-bind:key="idx">
+                                                                        <td>{{canister.idx}}.</td>
+                                                                        <td>{{canister.canisterId}}</td>
+                                                                        <td>
+                                                                            {{canister.status}}
+                                                                        </td>
+                                                                        <td>
+                                                                            <div class="btn-group" role="group" aria-label="Action">
+                                                                                <button class="btn btn-sm btn-outline-secondary" @click="canisterAction(canister.canisterId, 'installCode')">Install</button>
+                                                                                <button class="btn btn-sm btn-outline-secondary" @click="canisterAction(canister.canisterId, 'start')">Start</button>
+                                                                                <button class="btn btn-sm btn-warning" @click="canisterAction(canister.canisterId, 'stop')">Stop</button>
+                                                                                <button class="btn btn-sm btn-danger" @click="canisterAction(canister.canisterId, 'delete')">Delete</button>
+                                                                            </div>
+
+                                                                        </td></tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </section>
+                                                        </div>
+                                                        ------------------------------------------------------------------
+                                                    </div>
+                                                </div>
+
+
+
+                                                <!--              <div class="form-item mt-2">-->
+                                                <!--                <h5>Proposal List:</h5>-->
+                                                <!--                &lt;!&ndash;<button id="refresh_proposal" style="float:right">refresh proposals</button>&ndash;&gt;-->
+                                                <!--                &lt;!&ndash;<button id="btn_create_proposal" style="float:right">Initiate a proposal</button>&ndash;&gt;-->
+                                                <!--                <ul>-->
+                                                <!--                  <li v-for="(proposal, idx) in proposals" v-bind:key="idx">-->
+                                                <!--                    <table class="table table-sm">-->
+                                                <!--                      <tbody>-->
+                                                <!--                        <tr> <td>proposal_id</td> <td>{{proposal.proposal_id}}</td> </tr>-->
+                                                <!--                        <tr> <td>proposal_content</td> <td>{{proposal.proposal_content}}</td> </tr>-->
+                                                <!--                        <tr> <td>proposal_maker</td> <td>{{proposal.proposal_maker}}</td> </tr>-->
+                                                <!--                        <tr> <td>proposal_approvers</td> <td>{{proposal.proposal_approvers}}</td> </tr>-->
+                                                <!--                        <tr> <td>proposal_completed</td> <td>{{proposal.proposal_completed}}</td> </tr>-->
+                                                <!--                        <tr> <td>proposal_total</td> <td>{{proposal.proposal_total}}</td> </tr>-->
+                                                <!--                        <tr> <td>proposal_exe_method</td> <td>{{proposal.proposal_exe_method}}</td> </tr>-->
+                                                <!--                        <tr> <td>proposal_exe_target</td> <td>{{proposal.proposal_exe_target}}</td> </tr>-->
+                                                <!--                        <tr> <td>proposal_wasm_hash</td> <td>{{proposal.proposal_wasm_hash}}</td> </tr>-->
+                                                <!--                      </tbody>-->
+                                                <!--                    </table>-->
+                                                <!--                  </li>-->
+                                                <!--                </ul>-->
+                                                <!--              </div>-->
                                             </div>
-<!--                                            <textarea name="message" rows="2" class="form-control form-control-s1" placeholder="About this template - WASM module..." v-model="template_description" required></textarea>-->
                                         </div>
-
-                                        <button class="btn btn-sm btn-danger mb-2" @click="createTemplate">Create Image</button>
                                     </div>
                                 </div>
-
-                            </div>
-
-                            <div class="tab-pane fade" id="canister" role="tabpanel" aria-labelledby="canister-tab">
-
-
-                                <div class="">
-                                    <h5>Create a new canister: </h5>
-                                    <button id="btn_create_canister" class="btn btn-sm btn-danger" @click="createCanister">Request New Canister</button>
-                                </div>
-                                <div class="form-item mt-2">
-                                    <h5>Canister control:</h5>
-                                    <!--                <div>-->
-                                    <!--                  Proposal content : <input class="form-control input-sm" id="input_proposal_text" v-model="proposalText" placeholder="input proposal content" size=30 />-->
-                                    <!--                </div>-->
-                                    <div class="mt-2">
-                                        Action :
-                                        <select v-model="selectList" class="form-control" required>
-                                            <option value="install" selected>Install Code</option>
-                                            <option value="reinstall" selected>Re-Install Code</option>
-                                            <option value="start">Start</option>
-                                            <option value="stop">Stop</option>
-                                            <option value="delete">Delete</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        Template :
-                                        <select v-model="canister_template" class="form-control" required>
-                                            <option v-for="(template, idx) in templates" v-bind:key="idx" :value="template.template_id">{{template.template.name}}</option>
-                                        </select>
-                                    </div>
-                                    <!--                <div>-->
-                                    <!--                  Wasm file : <input type="file" class="form-control input-sm" id="file"  @change="handleFileUpload( $event )" />-->
-                                    <!--                </div>-->
-                                    <div class="mb-2">
-                                        Install Argument : <input class="form-control input-sm" v-model="installArgument" placeholder="principal aaaaa-aa" size=60 />
-                                    </div>
-                                    <div class="mb-2">
-                                        Target Canister : <input class="form-control input-sm" v-model="targetCanister" placeholder="input target canister" size=60 required />
-                                    </div>
-                                    <button class="btn btn-sm btn-danger mb-2" @click="createProposal">Excute</button>
-                                </div>
-                                <div class="form-item mt-2">
-                                    <section>
-                                        <h5 class=" mb-2">Canister List:</h5>
-                                        <button id="refresh_canister" class="btn btn-sm btn-outline-secondary" @click="getCanisters">Refresh canisters</button>
-                                    </section>
-                                    <section>
-                                        <table class="table table-sm">
-                                            <thead>
-                                            <tr><th>#</th><th>Canister</th><th>Status</th><th>Action</th></tr>
-                                            </thead>
-                                            <tbody>
-                                            <tr v-for="(canister, idx) in canisters" v-bind:key="idx">
-                                                <td>{{canister.idx}}.</td>
-                                                <td>{{canister.canisterId}}</td>
-                                                <td>
-                                                    {{canister.status}}
-                                                </td>
-                                                <td>
-                                                    <div class="btn-group" role="group" aria-label="Action">
-                                                        <button class="btn btn-sm btn-outline-secondary" @click="canisterAction(canister.canisterId, 'installCode')">Install</button>
-                                                        <button class="btn btn-sm btn-outline-secondary" @click="canisterAction(canister.canisterId, 'start')">Start</button>
-                                                        <button class="btn btn-sm btn-warning" @click="canisterAction(canister.canisterId, 'stop')">Stop</button>
-                                                        <button class="btn btn-sm btn-danger" @click="canisterAction(canister.canisterId, 'delete')">Delete</button>
-                                                    </div>
-
-                                                </td></tr>
-                                            </tbody>
-                                        </table>
-                                    </section>
-                                </div>
-                                ------------------------------------------------------------------
                             </div>
                         </div>
-
-
-
-                        <!--              <div class="form-item mt-2">-->
-                        <!--                <h5>Proposal List:</h5>-->
-                        <!--                &lt;!&ndash;<button id="refresh_proposal" style="float:right">refresh proposals</button>&ndash;&gt;-->
-                        <!--                &lt;!&ndash;<button id="btn_create_proposal" style="float:right">Initiate a proposal</button>&ndash;&gt;-->
-                        <!--                <ul>-->
-                        <!--                  <li v-for="(proposal, idx) in proposals" v-bind:key="idx">-->
-                        <!--                    <table class="table table-sm">-->
-                        <!--                      <tbody>-->
-                        <!--                        <tr> <td>proposal_id</td> <td>{{proposal.proposal_id}}</td> </tr>-->
-                        <!--                        <tr> <td>proposal_content</td> <td>{{proposal.proposal_content}}</td> </tr>-->
-                        <!--                        <tr> <td>proposal_maker</td> <td>{{proposal.proposal_maker}}</td> </tr>-->
-                        <!--                        <tr> <td>proposal_approvers</td> <td>{{proposal.proposal_approvers}}</td> </tr>-->
-                        <!--                        <tr> <td>proposal_completed</td> <td>{{proposal.proposal_completed}}</td> </tr>-->
-                        <!--                        <tr> <td>proposal_total</td> <td>{{proposal.proposal_total}}</td> </tr>-->
-                        <!--                        <tr> <td>proposal_exe_method</td> <td>{{proposal.proposal_exe_method}}</td> </tr>-->
-                        <!--                        <tr> <td>proposal_exe_target</td> <td>{{proposal.proposal_exe_target}}</td> </tr>-->
-                        <!--                        <tr> <td>proposal_wasm_hash</td> <td>{{proposal.proposal_wasm_hash}}</td> </tr>-->
-                        <!--                      </tbody>-->
-                        <!--                    </table>-->
-                        <!--                  </li>-->
-                        <!--                </ul>-->
-                        <!--              </div>-->
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
     <!-- row-->
 </template>
 

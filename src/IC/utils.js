@@ -123,7 +123,10 @@ export const isMultiInput = (name)=>{
     return name.match(regex);
 }
 export const formatDate = (time)=>{
-    return moment(Number(time)/1000000).format("MM/DD/YYYY HH:mm A");
+    return moment.utc(Number(time)/1000000).format("MM/DD/YYYY HH:mm A");
+}
+export const timeAgo = (time)=>{
+    return moment.utc(Number(time)/1000000).fromNow();
 }
 
 function deepCopy(text) {
@@ -170,12 +173,29 @@ export const canisterStatus = (status)=>{
     let _status = null;
     switch(Number(status)){
         case 1: _status = {label: "Running", style: "success"};break;
-        case 2: _status = {label: "Stoped", style: "danger"};break;
+        case 2: _status = {label: "Stoped", style: "warning"};break;
         case 3: _status = {label: "Deleted", style: "danger"};break;
         default: _status = {label: "Ready", style: "primary"};break;
     }
     return _status;
 }
+export const ICStatus = (statusObj)=>{
+    let _status = null;
+    for (const [key] of Object.entries(statusObj)) {
+        switch(key){
+            case 'running': _status = {label: "Running", style: "success"};break;
+            case 'stopping': _status = {label: "Stopping", style: "warning"};break;
+            case 'stopped': _status = {label: "Stoped", style: "warning"};break;
+            case 'deleted': _status = {label: "Deleted", style: "danger"};break;
+            default: _status = {label: "Ready", style: "primary"};break;
+        }
+    }
+    return _status;
+}
+export const formatter = (number)=>{
+    return number?new Intl.NumberFormat().format(number):number;
+}
+
 export default {
     showLoading,
     genPreviewTag,
@@ -189,7 +209,10 @@ export default {
     validatePrincipal,
     isMultiInput,
     formatDate,
+    timeAgo,
     copyToClipboard,
     unit8ArrToString,
-    canisterStatus
+    canisterStatus,
+    ICStatus,
+    formatter
 }

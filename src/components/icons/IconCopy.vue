@@ -23,10 +23,13 @@
 
 </script>
 <template>
-    <a v-if="!isCopied" href="javascript:void(0)" @click="copyToClipboard('1', 'Canister ID')" class="copy" title="Copy"><em class="icon ni ni-copy"></em></a>
-    <em v-if="isCopied" class="icon ni ni-check-circle text-success"></em>
+    <em v-if="!isCopied" href="javascript:void(0)" @click="copyToClipboard('1', 'Canister ID')" title="Copy" class="copy ni ni-copy"></em>
+    <em v-else class="ni ni-check-circle-fill text-success"></em>
 </template>
 <style>
+    .copy{
+        cursor: pointer;
+    }
     .copy:hover{
         color: #ff0000;
     }

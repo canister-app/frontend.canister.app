@@ -1,6 +1,6 @@
 <script>
     import CanisterManager from "@/services/CanisterManager";
-    import { formatDate, canisterStatus } from "../IC/utils";
+    import { formatDate, timeAgo, canisterStatus } from "../IC/utils";
     import IconCopy from "@/components/icons/IconCopy.vue";
     import Loading from "@/components/Loading.vue";
     import config from "../config";
@@ -10,18 +10,24 @@
             return{
                 formatDate,
                 canisterStatus,
+                timeAgo,
                 config,
-                myCanisters: null
+                myCanisters: null,
+                imageList: null
             }
         },
         methods: {
             async getMyCanister(){
                 this.myCanisters = null;
                 this.myCanisters = await CanisterManager.getMyCanister();
+            },
+            async getImageList(){
+                this.imageList = await CanisterManager.getImageList();
             }
         },
         mounted() {
            this.getMyCanister();
+           this.getImageList();
         }
     }
 </script>
@@ -186,7 +192,7 @@
                                     <div class="nk-tb-item nk-tb-head">
                                         <div class="nk-tb-col"><span>Canister Name</span></div>
                                         <div class="nk-tb-col tb-col-xxl"><span>Canister ID</span></div>
-                                        <div class="nk-tb-col tb-col-lg"><span>Images</span></div>
+                                        <div class="nk-tb-col tb-col-lg"><span>Installed image</span></div>
                                         <div class="nk-tb-col tb-col-lg"><span>Last updated</span></div>
                                         <div class="nk-tb-col text-end tb-col-sm"><span>Cycles</span></div>
                                         <div class="nk-tb-col nk-tb-col-status"><span class="sub-text d-none d-md-block">Status</span></div>
@@ -197,8 +203,8 @@
                                     <div class="nk-tb-item" v-for="canister in myCanisters">
                                         <div class="nk-tb-col">
                                             <div class="nk-tnx-type">
-                                                <div class="nk-tnx-type-icon bg-success-dim text-success">
-                                                    <em class="icon ni ni-code"></em>
+                                                <div class="nk-tnx-type-icon bg-primary-dim text-primary">
+                                                    <em class="icon ni ni-box"></em>
                                                 </div>
                                                 <div class="nk-tnx-type-text">
                                                     <span class="tb-lead"><router-link :to="`/my-canister/${canister.canisterId}`">{{canister.canisterName}}</router-link> <IconCopy :text="canister.canisterName" item="Canister Name"/></span>
@@ -207,17 +213,18 @@
                                             </div>
                                         </div>
                                         <div class="nk-tb-col tb-col-xxl">
-                                            <span class="tb-lead-sub"><a :href="`${config.IC_SCAN+canister.canisterId}`" target="_blank">{{canister.canisterId}}</a> <IconCopy :text="canister.canisterId" item="Canister ID"/></span>
+                                            <span v-if="canister.statusCode == 3" :class="`tb-lead-sub ${canister.statusCode == 3?'text-muted':''}`">{{canister.canisterId}}</span>
+                                            <span class="tb-lead-sub" v-else><a :href="`${config.IC_SCAN+canister.canisterId}`" target="_blank">{{canister.canisterId}} <em class="icon ni ni-external"></em></a> <IconCopy :text="canister.canisterId" item="Canister ID"  v-if="canister.statusCode != 3"/></span>
                                         </div>
                                         <div class="nk-tb-col tb-col-lg">
-                                            <span class="tb-lead-sub">{{canister.imageId}}</span>
+                                            <span class="tb-lead-sub" v-if="imageList"><router-link :to="`/store/${canister.imageId+'-'+imageList[canister.imageId]?.code}`">{{imageList[canister.imageId]?.name}}</router-link></span>
                                         </div>
                                         <div class="nk-tb-col tb-col-lg">
-                                            <span class="tb-lead-sub">{{formatDate(canister.updated)}}</span>
+                                            <span class="tb-date">{{formatDate(canister.updated)}}</span>
                                         </div>
                                         <div class="nk-tb-col text-end tb-col-sm">
-                                            <span class="tb-amount">1.30910201 <span>T</span></span>
-                                            <span class="tb-amount-sm">12 days left</span>
+                                            <span class="tb-amount">{{(Number(canister.cycles)/config.CYCLES).toFixed(3)}} <span>T</span></span>
+                                            <span class="tb-amount-sm">{{timeAgo(canister.cycles_updated)}} <i class="ni ni-history"></i> </span>
                                         </div>
                                         <div class="nk-tb-col nk-tb-col-status">
                                             <div class="dot dot-success d-md-none"></div>
@@ -226,7 +233,9 @@
                                         <div class="nk-tb-col nk-tb-col-tools">
                                             <ul class="nk-tb-actions gx-2">
                                                 <li class="nk-tb-action-hidden">
-                                                    <a href="#" class="bg-white btn btn-sm btn-outline-light btn-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Approve"><em class="icon ni ni-done"></em></a>
+                                                    <a href="#" class="bg-white btn btn-sm btn-outline-light btn-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Topup Cycles">
+                                                        <em class="icon ni ni-gift"></em>
+                                                    </a>
                                                 </li>
                                                 <li class="nk-tb-action-hidden">
                                                     <a href="#tranxDetails" data-bs-toggle="modal" class="bg-white btn btn-sm btn-outline-light btn-icon btn-tooltip" title="Details"><em class="icon ni ni-eye"></em></a>

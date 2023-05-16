@@ -49,22 +49,22 @@
                         <div class="row gy-4 btn-group-login">
                             <div class="col-md-6">
                                 <a href="javascript:void(0)" @click="login('nns')" class="btn no-spacing btn-wider btn-secondary">
-                                    <img src="/partner/dfinity-logo.png" alt="Internet Identity" class=" wallet-icon-small"> Internet Identity
+                                    <img src="/partner/nns.png" alt="Internet Identity" class=" wallet-icon-small"> Internet Identity
                                 </a>
                             </div>
                             <div class="col-md-6">
                                 <a href="javascript:void(0)" @click="login('plug')" class="btn no-spacing btn-wider btn-light">
-                                    <img src="/partner/plug-logo.png" alt="Plug" class="wallet-icon-small"> Plug Wallet
+                                    <img src="/partner/plug.png" alt="Plug" class="wallet-icon-small"> Plug Wallet
                                 </a>
                             </div>
                             <div class="col-md-6">
                                 <a href="javascript:void(0)" @click="login('stoic')" class="btn no-spacing btn-wider btn-light">
-                                    <img src="/partner/stoic-logo.png" alt="Stoic" class="wallet-icon-small"> Stoic Wallet
+                                    <img src="/partner/stoic.png" alt="Stoic" class="wallet-icon-small"> Stoic Wallet
                                 </a>
                             </div>
                             <div class="col-md-6">
                                 <a href="javascript:void(0)" @click="login('bitfinity')" class="btn no-spacing btn-wider btn-light">
-                                    <img src="/partner/bitfinitywallet-logo.png" alt="Infinity" class="wallet-icon-small"> Bitfinity Wallet
+                                    <img src="/partner/bitfinity.png" alt="Infinity" class="wallet-icon-small"> Bitfinity Wallet
                                 </a>
                             </div>
                         </div>

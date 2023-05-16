@@ -30,7 +30,7 @@
                             <div class="nk-block-head-content">
                                 <h3 class="nk-block-title page-title">Canister Store</h3>
                                 <div class="nk-block-des text-soft">
-                                    <p>Empowering developers, powering the future.</p>
+                                    <p>Empowering users, powering the future.</p>
                                 </div>
                             </div><!-- .nk-block-head-content -->
                             <div class="nk-block-head-content">
@@ -64,7 +64,7 @@
                             <div class="nk-block-between g-3">
                                 <div class="nk-block-head-content">
                                     <h3 class="nk-block-title page-title">Top canisters</h3>
-                                    <div class="nk-block-des text-soft"><p>Choose your pricing plan and start enjoying our service.</p></div>
+                                    <div class="nk-block-des text-soft"><p>Choose your canister image and start deploying.</p></div>
                                 </div>
                             </div>
                         </div>
@@ -73,7 +73,6 @@
                                 <div class="col-xl-12 col-xxl-3" v-for="image in canisterImages">
                                     <CanisterImage :image="image" />
                                 </div>
-
                         </div>
                     </div>
                 </div>

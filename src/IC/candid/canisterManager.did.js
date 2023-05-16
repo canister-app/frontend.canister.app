@@ -19,6 +19,8 @@ export default ({ IDL }) => {
         'created' : Time,
         'canisterName' : IDL.Text,
         'owner' : IDL.Principal,
+        'cycles' : IDL.Nat,
+        'cycles_updated' : Time,
         'updated' : Time,
         'imageId' : IDL.Nat,
         'canisterId' : canister_id,
@@ -83,6 +85,8 @@ export default ({ IDL }) => {
     const CanisterImageResponse = IDL.Vec(
         IDL.Tuple(IDL.Nat, CanisterImageNoWasm)
     );
+    const ImageMapping = IDL.Record({ 'code' : IDL.Text, 'name' : IDL.Text });
+    const CanisterImageMapping = IDL.Vec(IDL.Tuple(IDL.Nat, ImageMapping));
     const Payment = IDL.Record({
         'to' : IDL.Principal,
         'from' : IDL.Principal,
@@ -122,6 +126,7 @@ export default ({ IDL }) => {
         'get_cycles' : IDL.Func([], [Balance], []),
         'get_image' : IDL.Func([IDL.Nat], [Result_1], ['query']),
         'get_images' : IDL.Func([], [CanisterImageResponse], ['query']),
+        'get_images_list' : IDL.Func([], [CanisterImageMapping], ['query']),
         'makePayment' : IDL.Func([], [Result], []),
         'my_canister' : IDL.Func([], [CanisterResponse], ['query']),
         'price' : IDL.Func([], [IDL.Nat], ['query']),

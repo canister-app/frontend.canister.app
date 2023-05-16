@@ -581,7 +581,7 @@
 
   // Dark Mode Switch @since v2.0
   NioApp.ModeSwitch = function () {
-    var toggle = $('.dark-switch');
+    var toggle = $('.dark-switch-btn');
     if ($body.hasClass('dark-mode')) {
       toggle.addClass('active');
     } else {
