@@ -12,6 +12,7 @@ import governanceIDL from './candid/governance.did.js';
 import canisterManager from './candid/canisterManager.did.js';
 import nnsIDL from './candid/nns.did.js';
 import cyclesIDL from './candid/cycles.did.js';
+import icLightHouse from './candid/icLightHouse.did.js'
 
 // CANISTER_ID is replaced by webpack based on node environment
 export const canisterId = config.CANIC_APP;//process.env.BUCKET_CANISTER_ID;
@@ -55,6 +56,7 @@ class ICnetwork {
         'ledger' : ledgerIDL,
         'ryjl3-tyaaa-aaaaa-aaaba-cai' : ledgerIDL,
         'rnczv-riaaa-aaaap-qbbwq-cai': canic,
+        'j4d4d-pqaaa-aaaak-aanxq-cai': icLightHouse,
         [config.CANISTER_MANAGER_ID]: canisterManager,
         [config.CANISTER_CYCLE_MINTING]: cyclesIDL
     };

@@ -1,10 +1,67 @@
 <script >
   import { ref } from "vue";
+  import _api from "@/IC/api";
+  import moment from "moment";
+  import config from "@/config"
+  import IconICP from "@/components/icons/IconICP.vue";
   export default {
-    components: {  },
+    components: { IconICP  },
     data(){
       return {
+          pairs: null,
+          config,
+          counter: 60,
+          update_interval: null,
+          counter_interval: null
       }
+    },
+    methods: {
+        async getPairs(){
+            let _pairs = await _api.connect().canister('j4d4d-pqaaa-aaaak-aanxq-cai').getPairs2([], [], [], []);
+            console.log('_pairs: ', _pairs);
+            let _newPairs = [];
+            _pairs.data.forEach(function(pair){
+                let _standard = Object.keys(pair[1].pair.token0[2]);
+                let _tokenInfo = {
+                    canisterId: pair[1].pair.token0[0],
+                    standard: _standard[0],
+                    token0: pair[1].pair.token0[1],
+                    token1: pair[1].pair.token1[1],
+                    name: pair[1].pair.token0[1],
+                    volume: pair[1].liquidity[0].vol,
+                    swapCount: pair[1].liquidity[0].swapCount,
+                    price: Number(pair[1].liquidity[0].value1)/Number(pair[1].liquidity[0].value0),
+                    score: pair[1].score,
+                    updated: moment.utc().fromNow(Number(pair[1].liquidity[0].priceWeighted.updateTime))
+                };
+                if(_tokenInfo.name == "ITest" || _tokenInfo.name == 'Cycles'){
+                }else{
+                    _newPairs.push(_tokenInfo)
+                }
+
+            })
+            this.pairs = _newPairs;
+            console.log('_newPairs: ', _newPairs);
+        },
+        setInterval(){
+            this.update_interval = setInterval(()=>{
+                this.getPairs();
+                this.counter = 60;
+            }, 60*1000)
+            this.counter_interval = setInterval(this.incrementSeconds, 1000)
+        },
+        incrementSeconds() {
+            this.counter -= 1;
+        },
+    },
+    mounted() {
+        this.setInterval();
+        this.getPairs();
+    },
+    unmounted() {
+      console.log("Stopping the interval timer")
+      clearInterval(this.update_interval)
+      clearInterval(this.counter_interval)
     }
   }
 </script>
@@ -18,322 +75,95 @@
                             <div class="nk-block-head-content">
                                 <h3 class="nk-block-title page-title">Canister Dashboard</h3>
                                 <div class="nk-block-des text-soft">
-                                    <p>Welcome to All in one Canister Platform.</p>
+                                    <p>Realtime token tracking on the Internet Computer.</p>
                                 </div>
                             </div><!-- .nk-block-head-content -->
-                            <div class="nk-block-head-content">
-                                <div class="toggle-wrap nk-block-tools-toggle">
-                                    <a href="#" class="btn btn-icon btn-trigger toggle-expand me-n1" data-target="pageMenu"><em class="icon ni ni-more-v"></em></a>
-                                    <div class="toggle-expand-content" data-content="pageMenu">
-                                        <ul class="nk-block-tools g-3">
-                                            <li><a href="#" class="btn btn-white btn-dim btn-outline-primary"><em class="icon ni ni-download-cloud"></em><span>Export</span></a></li>
-                                            <li><a href="#" class="btn btn-white btn-dim btn-outline-primary"><em class="icon ni ni-reports"></em><span>Reports</span></a></li>
-                                            <li class="nk-block-tools-opt">
-                                                <div class="drodown">
-                                                    <a href="#" class="dropdown-toggle btn btn-icon btn-primary" data-bs-toggle="dropdown"><em class="icon ni ni-plus"></em></a>
-                                                    <div class="dropdown-menu dropdown-menu-end">
-                                                        <ul class="link-list-opt no-bdr">
-                                                            <li><a href="#"><em class="icon ni ni-user-add-fill"></em><span>Add User</span></a></li>
-                                                            <li><a href="#"><em class="icon ni ni-coin-alt-fill"></em><span>Add Order</span></a></li>
-                                                            <li><a href="#"><em class="icon ni ni-note-add-fill-c"></em><span>Add Page</span></a></li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div><!-- .nk-block-head-content -->
+<!--                            <div class="nk-block-head-content">-->
+<!--                                <div class="toggle-wrap nk-block-tools-toggle">-->
+<!--                                    <a href="#" class="btn btn-icon btn-trigger toggle-expand me-n1" data-target="pageMenu"><em class="icon ni ni-more-v"></em></a>-->
+<!--                                    <div class="toggle-expand-content" data-content="pageMenu">-->
+<!--                                        <ul class="nk-block-tools g-3">-->
+<!--                                            <li><a href="#" class="btn btn-white btn-dim btn-outline-primary"><em class="icon ni ni-download-cloud"></em><span>Export</span></a></li>-->
+<!--                                            <li><a href="#" class="btn btn-white btn-dim btn-outline-primary"><em class="icon ni ni-reports"></em><span>Reports</span></a></li>-->
+<!--                                        </ul>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>&lt;!&ndash; .nk-block-head-content &ndash;&gt;-->
                         </div><!-- .nk-block-between -->
                     </div><!-- .nk-block-head -->
                     <div class="nk-block">
                         <div class="row g-gs">
-                            <div class="col-lg-8">
-                                <div class="card card-bordered h-100">
-                                    <div class="card-inner">
-                                        <div class="card-title-group align-start mb-3">
-                                            <div class="card-title">
-                                                <h6 class="title">Orders Overview</h6>
-                                                <p>In last 15 days buy and sells overview. <a href="#" class="link link-sm">Detailed Stats</a></p>
-                                            </div>
-                                            <div class="card-tools mt-n1 me-n1">
-                                                <div class="drodown">
-                                                    <a href="#" class="dropdown-toggle btn btn-icon btn-trigger" data-bs-toggle="dropdown"><em class="icon ni ni-more-h"></em></a>
-                                                    <div class="dropdown-menu dropdown-menu-sm dropdown-menu-end">
-                                                        <ul class="link-list-opt no-bdr">
-                                                            <li><a href="#" class="active"><span>15 Days</span></a></li>
-                                                            <li><a href="#"><span>30 Days</span></a></li>
-                                                            <li><a href="#"><span>3 Months</span></a></li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div><!-- .card-title-group -->
-                                        <div class="nk-order-ovwg">
-                                            <div class="row g-4 align-end">
-                                                <div class="col-xxl-8">
-                                                    <div class="nk-order-ovwg-ck">
-                                                        <canvas class="order-overview-chart" id="orderOverview"></canvas>
-                                                    </div>
-                                                </div><!-- .col -->
-                                                <div class="col-xxl-4">
-                                                    <div class="row g-4">
-                                                        <div class="col-sm-6 col-xxl-12">
-                                                            <div class="nk-order-ovwg-data buy">
-                                                                <div class="amount">12,954.63 <small class="currenct currency-usd">USD</small></div>
-                                                                <div class="info">Last month <strong>39,485 <span class="currenct currency-usd">USD</span></strong></div>
-                                                                <div class="title"><em class="icon ni ni-arrow-down-left"></em> Buy Orders</div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-sm-6 col-xxl-12">
-                                                            <div class="nk-order-ovwg-data sell">
-                                                                <div class="amount">12,954.63 <small class="currenct currency-usd">USD</small></div>
-                                                                <div class="info">Last month <strong>39,485 <span class="currenct currency-usd">USD</span></strong></div>
-                                                                <div class="title"><em class="icon ni ni-arrow-up-left"></em> Sell Orders</div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div><!-- .col -->
-                                            </div>
-                                        </div><!-- .nk-order-ovwg -->
-                                    </div><!-- .card-inner -->
-                                </div><!-- .card -->
-                            </div><!-- .col -->
-                            <div class="col-lg-4">
-                                <div class="card card-bordered h-100">
-                                    <div class="card-inner-group">
-                                        <div class="card-inner card-inner-md">
-                                            <div class="card-title-group">
-                                                <div class="card-title">
-                                                    <h6 class="title">Action Center</h6>
-                                                </div>
-                                                <div class="card-tools me-n1">
-                                                    <div class="drodown">
-                                                        <a href="#" class="dropdown-toggle btn btn-icon btn-trigger" data-bs-toggle="dropdown"><em class="icon ni ni-more-h"></em></a>
-                                                        <div class="dropdown-menu dropdown-menu-end">
-                                                            <ul class="link-list-opt no-bdr">
-                                                                <li><a href="#"><em class="icon ni ni-setting"></em><span>Action Settings</span></a></li>
-                                                                <li><a href="#"><em class="icon ni ni-notify"></em><span>Push Notification</span></a></li>
-                                                            </ul>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div><!-- .card-inner -->
-                                        <div class="card-inner">
-                                            <div class="nk-wg-action">
-                                                <div class="nk-wg-action-content">
-                                                    <em class="icon ni ni-cc-alt-fill"></em>
-                                                    <div class="title">Pending Buy/Sell Orders</div>
-                                                    <p>We have still <strong>40 buy orders</strong> and <strong>12 sell orders</strong>, thats need to review & take necessary action.</p>
-                                                </div>
-                                                <a href="#" class="btn btn-icon btn-trigger me-n2"><em class="icon ni ni-forward-ios"></em></a>
-                                            </div>
-                                        </div><!-- .card-inner -->
-                                        <div class="card-inner">
-                                            <div class="nk-wg-action">
-                                                <div class="nk-wg-action-content">
-                                                    <em class="icon ni ni-help-fill"></em>
-                                                    <div class="title">Support Messages</div>
-                                                    <p>Here is <strong>18 new</strong> support message. </p>
-                                                </div>
-                                                <a href="#" class="btn btn-icon btn-trigger me-n2"><em class="icon ni ni-forward-ios"></em></a>
-                                            </div>
-                                        </div><!-- .card-inner -->
-                                        <div class="card-inner">
-                                            <div class="nk-wg-action">
-                                                <div class="nk-wg-action-content">
-                                                    <em class="icon ni ni-wallet-fill"></em>
-                                                    <div class="title">Upcoming Deposit</div>
-                                                    <p>Here is <strong>7 upcoming</strong> deposit need to review.</p>
-                                                </div>
-                                                <a href="#" class="btn btn-icon btn-trigger me-n2"><em class="icon ni ni-forward-ios"></em></a>
-                                            </div>
-                                        </div><!-- .card-inner -->
-                                    </div><!-- .card-inner-group -->
-                                </div><!-- .card -->
-                            </div><!-- .col -->
-                            <div class="col-lg-8">
+
+                            <div class="col-lg-10">
                                 <div class="card card-bordered card-full">
                                     <div class="card-inner">
                                         <div class="card-title-group">
                                             <div class="card-title">
-                                                <h6 class="title"><span class="me-2">Orders Activities</span> <a href="#" class="link d-none d-sm-inline">See History</a></h6>
+                                                <h6 class="title"><span class="me-2">Canister Tokens</span>
+                                                    <a href="#" class="link d-none d-sm-inline">See History</a>
+
+                                                </h6>
                                             </div>
                                             <div class="card-tools">
-                                                <ul class="card-tools-nav">
-                                                    <li><a href="#"><span>Buy</span></a></li>
-                                                    <li><a href="#"><span>Sell</span></a></li>
-                                                    <li class="active"><a href="#"><span>All</span></a></li>
-                                                </ul>
+                                                <small>Update after: {{counter}} seconds</small>
+<!--                                                <ul class="card-tools-nav">-->
+
+<!--                                                    <li><a href="#"><span>Buy</span></a></li>-->
+<!--                                                    <li><a href="#"><span>Sell</span></a></li>-->
+<!--                                                    <li class="active"><a href="#"><span>All</span></a></li>-->
+<!--                                                </ul>-->
                                             </div>
                                         </div>
                                     </div><!-- .card-inner -->
                                     <div class="card-inner p-0 border-top">
                                         <div class="nk-tb-list nk-tb-orders">
                                             <div class="nk-tb-item nk-tb-head">
-                                                <div class="nk-tb-col nk-tb-orders-type"><span>Type</span></div>
-                                                <div class="nk-tb-col"><span>Desc</span></div>
-                                                <div class="nk-tb-col tb-col-sm"><span>Date</span></div>
-                                                <div class="nk-tb-col tb-col-xl"><span>Time</span></div>
-                                                <div class="nk-tb-col tb-col-xxl"><span>Ref</span></div>
-                                                <div class="nk-tb-col tb-col-sm text-end"><span>USD Amount</span></div>
-                                                <div class="nk-tb-col text-end"><span>Amount</span></div>
+                                                <div class="nk-tb-col"><span>#</span></div>
+                                                <div class="nk-tb-col nk-tb-orders-type"></div>
+                                                <div class="nk-tb-col"><span>Name</span></div>
+                                                <div class="nk-tb-col text-end"><span>Price</span></div>
+                                                <div class="nk-tb-col "><span>24h % change</span></div>
+                                                <div class="nk-tb-col text-end"><span>Marketcap</span></div>
+                                                <div class="nk-tb-col tb-col-sm text-end"><span>Volume</span></div>
+                                                <div class="nk-tb-col tb-col-sm"><span>Canister ID</span></div>
+                                                <div class="nk-tb-col tb-col-xxl"><span>Swap count</span></div>
+                                                <div class="nk-tb-col text-end"><span>Last 7 days</span></div>
                                             </div><!-- .nk-tb-item -->
-                                            <div class="nk-tb-item">
+                                            <div class="nk-tb-item" v-for="(pair, idx) in pairs">
+                                                <div class="nk-tb-col">
+                                                    <span class="tb-sub">{{idx+1}}.</span>
+                                                </div>
                                                 <div class="nk-tb-col nk-tb-orders-type">
                                                     <ul class="icon-overlap">
-                                                        <li><em class="bg-btc-dim icon-circle icon ni ni-sign-btc"></em></li>
-                                                        <li><em class="bg-success-dim icon-circle icon ni ni-arrow-down-left"></em></li>
+                                                        <li class="w-40px"><em class="bg-primary-dim icon-circle icon ni ni-info"></em></li>
                                                     </ul>
                                                 </div>
                                                 <div class="nk-tb-col">
-                                                    <span class="tb-lead">Buy Bitcoin</span>
+                                                    <span class="tb-lead">{{pair.name}} &nbsp;<span class="badge bg-light text-uppercase">{{pair.standard}}</span></span>
                                                 </div>
-                                                <div class="nk-tb-col tb-col-sm">
-                                                    <span class="tb-sub">02/10/2020</span>
-                                                </div>
-                                                <div class="nk-tb-col tb-col-xl">
-                                                    <span class="tb-sub">11:37 PM</span>
-                                                </div>
-                                                <div class="nk-tb-col tb-col-xxl">
-                                                    <span class="tb-sub text-primary">RE2309232</span>
-                                                </div>
-                                                <div class="nk-tb-col tb-col-sm text-end">
-                                                    <span class="tb-sub tb-amount">4,565.75 <span>USD</span></span>
-                                                </div>
-                                                <div class="nk-tb-col text-end">
-                                                    <span class="tb-sub tb-amount ">+ 0.2040 <span>BTC</span></span>
-                                                </div>
-                                            </div><!-- .nk-tb-item -->
-                                            <div class="nk-tb-item">
-                                                <div class="nk-tb-col nk-tb-orders-type">
-                                                    <ul class="icon-overlap">
-                                                        <li><em class="bg-eth-dim icon-circle icon ni ni-sign-eth"></em></li>
-                                                        <li><em class="bg-success-dim icon-circle icon ni ni-arrow-down-left"></em></li>
-                                                    </ul>
+                                                <div class="nk-tb-col text-right">
+                                                    <span class="tb-amount">${{(Number(pair.price)*4.12).toFixed(2)}}</span>
+                                                    <span class="tb-amount-sm">{{(pair.price).toFixed(4)}} ICP</span>
                                                 </div>
                                                 <div class="nk-tb-col">
-                                                    <span class="tb-lead">Buy Ethereum</span>
+                                                    <span class="tb-sub">---%</span>
                                                 </div>
-                                                <div class="nk-tb-col tb-col-sm">
-                                                    <span class="tb-sub">02/10/2020</span>
-                                                </div>
-                                                <div class="nk-tb-col tb-col-xl">
-                                                    <span class="tb-sub">10:37 PM</span>
-                                                </div>
-                                                <div class="nk-tb-col tb-col-xxl">
-                                                    <span class="tb-sub text-primary">RE2309232</span>
-                                                </div>
-                                                <div class="nk-tb-col tb-col-sm text-end">
-                                                    <span class="tb-sub tb-amount">2,039.39 <span>USD</span></span>
-                                                </div>
+
                                                 <div class="nk-tb-col text-end">
-                                                    <span class="tb-sub tb-amount ">+ 0.12600 <span>BTC</span></span>
+                                                    <span class="tb-sub">{{(Number(pair.volume.value1)/config.E8S).toFixed(4)}} <span>ICP</span></span>
                                                 </div>
-                                            </div><!-- .nk-tb-item -->
-                                            <div class="nk-tb-item">
-                                                <div class="nk-tb-col nk-tb-orders-type">
-                                                    <ul class="icon-overlap">
-                                                        <li><em class="bg-btc-dim icon-circle icon ni ni-sign-btc"></em></li>
-                                                        <li><em class="bg-purple-dim icon-circle icon ni ni-arrow-up-right"></em></li>
-                                                    </ul>
+                                                <div class="nk-tb-col tb-col-xl text-end">
+                                                    <span class="tb-sub">{{(Number(pair.volume.value1)/config.E8S).toFixed(4)}} <span>ICP</span></span>
                                                 </div>
-                                                <div class="nk-tb-col">
-                                                    <span class="tb-lead">Sell Bitcoin</span>
+                                               <div class="nk-tb-col tb-col-sm">
+                                                    <span class="tb-sub">{{pair.canisterId}}</span>
                                                 </div>
-                                                <div class="nk-tb-col tb-col-sm">
-                                                    <span class="tb-sub">02/10/2020</span>
-                                                </div>
-                                                <div class="nk-tb-col tb-col-xl">
-                                                    <span class="tb-sub">10:45 PM</span>
-                                                </div>
-                                                <div class="nk-tb-col tb-col-xxl">
-                                                    <span class="tb-sub text-primary">RE2309232</span>
-                                                </div>
+
                                                 <div class="nk-tb-col tb-col-sm text-end">
-                                                    <span class="tb-sub tb-amount">9,285.71 <span>USD</span></span>
+                                                    <span class="tb-sub tb-amount">{{(Number(pair.volume.value1)/config.E8S).toFixed(4)}} <span>ICP</span></span>
                                                 </div>
-                                                <div class="nk-tb-col text-end">
-                                                    <span class="tb-sub tb-amount ">+ 0.94750 <span>BTC</span></span>
-                                                </div>
-                                            </div><!-- .nk-tb-item -->
-                                            <div class="nk-tb-item">
-                                                <div class="nk-tb-col nk-tb-orders-type">
-                                                    <ul class="icon-overlap">
-                                                        <li><em class="bg-eth-dim icon-circle icon ni ni-sign-eth"></em></li>
-                                                        <li><em class="bg-purple-dim icon-circle icon ni ni-arrow-up-right"></em></li>
-                                                    </ul>
-                                                </div>
-                                                <div class="nk-tb-col">
-                                                    <span class="tb-lead">Sell Etherum</span>
-                                                </div>
-                                                <div class="nk-tb-col tb-col-sm">
-                                                    <span class="tb-sub">02/11/2020</span>
-                                                </div>
-                                                <div class="nk-tb-col tb-col-xl">
-                                                    <span class="tb-sub">10:25 PM</span>
-                                                </div>
-                                                <div class="nk-tb-col tb-col-xxl">
-                                                    <span class="tb-sub text-primary">RE2309232</span>
-                                                </div>
-                                                <div class="nk-tb-col tb-col-sm text-end">
-                                                    <span class="tb-sub tb-amount">12,596.75 <span>USD</span></span>
-                                                </div>
-                                                <div class="nk-tb-col text-end">
-                                                    <span class="tb-sub tb-amount ">+ 1.02050 <span>BTC</span></span>
-                                                </div>
-                                            </div><!-- .nk-tb-item -->
-                                            <div class="nk-tb-item">
-                                                <div class="nk-tb-col nk-tb-orders-type">
-                                                    <ul class="icon-overlap">
-                                                        <li><em class="bg-btc-dim icon-circle icon ni ni-sign-btc"></em></li>
-                                                        <li><em class="bg-success-dim icon-circle icon ni ni-arrow-down-left"></em></li>
-                                                    </ul>
-                                                </div>
-                                                <div class="nk-tb-col">
-                                                    <span class="tb-lead">Buy Bitcoin</span>
-                                                </div>
-                                                <div class="nk-tb-col tb-col-sm">
-                                                    <span class="tb-sub">02/10/2020</span>
-                                                </div>
-                                                <div class="nk-tb-col tb-col-xl">
-                                                    <span class="tb-sub">10:12 PM</span>
-                                                </div>
-                                                <div class="nk-tb-col tb-col-xxl">
-                                                    <span class="tb-sub text-primary">RE2309232</span>
-                                                </div>
-                                                <div class="nk-tb-col tb-col-sm text-end">
-                                                    <span class="tb-sub tb-amount">400.00 <span>USD</span></span>
-                                                </div>
-                                                <div class="nk-tb-col text-end">
-                                                    <span class="tb-sub tb-amount ">+ 0.00056 <span>BTC</span></span>
-                                                </div>
-                                            </div><!-- .nk-tb-item -->
-                                            <div class="nk-tb-item">
-                                                <div class="nk-tb-col nk-tb-orders-type">
-                                                    <ul class="icon-overlap">
-                                                        <li><em class="bg-eth-dim icon-circle icon ni ni-sign-eth"></em></li>
-                                                        <li><em class="bg-purple-dim icon-circle icon ni ni-arrow-up-right"></em></li>
-                                                    </ul>
-                                                </div>
-                                                <div class="nk-tb-col">
-                                                    <span class="tb-lead">Sell Etherum</span>
-                                                </div>
-                                                <div class="nk-tb-col tb-col-sm">
-                                                    <span class="tb-sub">02/09/2020</span>
-                                                </div>
-                                                <div class="nk-tb-col tb-col-xl">
-                                                    <span class="tb-sub">05:15 PM</span>
-                                                </div>
-                                                <div class="nk-tb-col tb-col-xxl">
-                                                    <span class="tb-sub text-primary">RE2309232</span>
-                                                </div>
-                                                <div class="nk-tb-col tb-col-sm text-end">
-                                                    <span class="tb-sub tb-amount">6,246.50 <span>USD</span></span>
-                                                </div>
-                                                <div class="nk-tb-col text-end">
-                                                    <span class="tb-sub tb-amount ">+ 0.02575 <span>BTC</span></span>
+                                                <div class="nk-tb-col ">
+                                                    <span class="tb-sub tb-amount ">---</span>
                                                 </div>
                                             </div><!-- .nk-tb-item -->
                                         </div>
@@ -343,15 +173,15 @@
                                     </div><!-- .card-inner -->
                                 </div><!-- .card -->
                             </div><!-- .col -->
-                            <div class="col-lg-4">
+                            <div class="col-lg-2">
                                 <div class="row g-gs">
                                     <div class="col-md-6 col-lg-12">
                                         <div class="card card-bordered card-full">
                                             <div class="card-inner">
                                                 <div class="card-title-group align-start mb-2">
                                                     <div class="card-title">
-                                                        <h6 class="title">Top Coin in Orders</h6>
-                                                        <p>In last 15 days buy and sells overview.</p>
+                                                        <h6 class="title">Top Tokens</h6>
+                                                        <p>In last 15 days overview.</p>
                                                     </div>
                                                     <div class="card-tools mt-n1 me-n1">
                                                         <div class="drodown">
@@ -371,11 +201,11 @@
                                                         <canvas class="coin-overview-chart" id="coinOverview"></canvas>
                                                     </div>
                                                     <ul class="nk-coin-ovwg-legends">
-                                                        <li><span class="dot dot-lg sq" data-bg="#f98c45"></span><span>Bitcoin</span></li>
-                                                        <li><span class="dot dot-lg sq" data-bg="#9cabff"></span><span>Ethereum</span></li>
-                                                        <li><span class="dot dot-lg sq" data-bg="#8feac5"></span><span>NioCoin</span></li>
-                                                        <li><span class="dot dot-lg sq" data-bg="#6b79c8"></span><span>Litecoin</span></li>
-                                                        <li><span class="dot dot-lg sq" data-bg="#79f1dc"></span><span>Bitcoin Cash</span></li>
+                                                        <li><span class="dot dot-lg sq" data-bg="#f98c45"></span><span>ckBTC</span></li>
+                                                        <li><span class="dot dot-lg sq" data-bg="#9cabff"></span><span>CHAT</span></li>
+                                                        <li><span class="dot dot-lg sq" data-bg="#8feac5"></span><span>SNS1</span></li>
+                                                        <li><span class="dot dot-lg sq" data-bg="#6b79c8"></span><span>OT</span></li>
+                                                        <li><span class="dot dot-lg sq" data-bg="#79f1dc"></span><span>OGY</span></li>
                                                     </ul>
                                                 </div><!-- .nk-coin-ovwg -->
                                             </div><!-- .card-inner -->

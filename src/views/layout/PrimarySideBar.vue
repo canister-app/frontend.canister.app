@@ -1,10 +1,10 @@
 <template>
     <div class="nk-apps-sidebar">
         <div class="nk-apps-brand">
-            <a href="/" class="logo-link">
+            <router-link to="/" class="logo-link">
                 <img class="logo-light logo-img" src="/images/logo-small.png" srcset="/images/logo-small2x.png 2x" alt="logo">
                 <img class="logo-dark logo-img" src="/images/logo-dark-small.png" srcset="/images/logo-dark-small2x.png 2x" alt="logo-dark">
-            </a>
+            </router-link>
         </div>
         <div class="nk-sidebar-element">
             <div class="nk-sidebar-body">
@@ -13,15 +13,15 @@
                         <!-- Menu -->
                         <ul class="nk-menu apps-menu">
                             <li class="nk-menu-item">
-                                <a href="html/cms/index.html" class="nk-menu-link" title="CMS Panel">
-                                    <span class="nk-menu-icon"><em class="icon ni ni-template"></em></span>
-                                </a>
+                                <router-link to="/" class="nk-menu-link" title="Dashboard">
+                                    <span class="nk-menu-icon"><em class="icon ni ni-dashboard"></em></span>
+                                </router-link>
                             </li><!-- .nk-menu-item -->
                             <li class="nk-menu-hr"></li>
                             <li class="nk-menu-item">
-                                <a href="html/index.html" class="nk-menu-link" title="Analytics Dashboard">
-                                    <span class="nk-menu-icon"><em class="icon ni ni-dashboard"></em></span>
-                                </a>
+                                <router-link to="/store" class="nk-menu-link" title="Canister Store">
+                                    <span class="nk-menu-icon"><em class="icon ni ni-layers"></em></span>
+                                </router-link>
                             </li>
                             <li class="nk-menu-item">
                                 <a href="html/index-sales.html" class="nk-menu-link" title="Sales Dashboard">
