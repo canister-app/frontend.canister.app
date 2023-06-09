@@ -27,7 +27,7 @@
                 <li class="nk-menu-item">
                     <router-link to="/publisher-dashboard" class="nk-menu-link">
                         <span class="nk-menu-icon"><em class="icon ni ni-dashboard"></em></span>
-                        <span class="nk-menu-text">Publisher Dashboard</span>
+                        <span class="nk-menu-text">Developer Dashboard</span>
                     </router-link>
                 </li><!-- .nk-menu-item -->
                 <li class="nk-menu-heading">

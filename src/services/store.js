@@ -1,9 +1,11 @@
 import { reactive } from 'vue'
 import axios from "axios";
 import config from "@/config";
+import CanisterManager from "./CanisterManager.js"
 // import _apiHandler from "@/ic/api";
-
+import _api from "@/IC/api"
 import { rosettaApi } from "../IC/utils.js";
+import {WalletManager} from "./WalletManager";
 
 const _accounts = false;//JSON.parse(localStorage.getItem('accounts'));
 const _principal = false;//JSON.parse(localStorage.getItem('principal'));
@@ -17,6 +19,7 @@ export const walletData = reactive({
     accounts: _accounts?_accounts:false,
     account: _current_account?_current_account:false,
     balance: 0,
+    cycleBalance: 0,//Cycles canister
     stakingBalance: 0,
     xcanicBalance: 0,
     canic: 0,
@@ -28,6 +31,7 @@ export const walletData = reactive({
     isModalVisible: false,
     lastUpdate: null,
     icpRate: null,
+    cycleRate: 3.5127,
     setIdentity(principal){
         this.principal = principal;
         if(principal){
@@ -46,10 +50,16 @@ export const walletData = reactive({
             this.stakingBalance = 0;
         }
     },
-    loginAction(wallet){ //Default login action
+    setCycleBalance(balance){
+        this.cycleBalance = balance;
+    },
+    setCycleRate(rate){
+        this.cycleRate = rate;
+    },
+    async loginAction(wallet){ //Default login action
         this.setCurrentAccountIdx(0);
         this.setLoginState(wallet);
-        this.getBalance();
+        await this.getBalance();
         // this.getStakingBalance();
         this.setLoginState(wallet);
         localStorage.setItem("_w_connected", wallet);
@@ -57,6 +67,9 @@ export const walletData = reactive({
         // this.getWalletData();
         // this.getXcanicBalance();
         // this.updateAccountPrincipal();
+        //Cycles check!!!!!!!!!!
+        await WalletManager.getCycleRate()
+        await WalletManager.getCycleBalance()
     },
     logoutAction(){
         this.stakingBalance = 0;
@@ -97,6 +110,8 @@ export const walletData = reactive({
             await rosettaApi.getAccountBalance(this.account.address).then(b =>{
                 this.balance = Number(b);
             })
+            await WalletManager.getCycleBalance();
+            await WalletManager.getCycleRate();
         }
     },
     async getStakingBalance() {

@@ -1,5 +1,5 @@
 <template>
-    <div class="pl-10">
+    <div class="pl-10 pb-3">
         <div class="row gy-4">
             <input type="hidden" name="token_standard" value="EXT-NFT">
             <div class="col-sm-12">

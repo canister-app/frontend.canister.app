@@ -21,6 +21,7 @@
     "json-bigint": "^1.0.0",
     "mitt": "^3.0.0",
     "moment": "^2.29.4",
+    "qr-code-generator-vue3": "^1.4.21",
     "v-money3": "^3.24.0",
     "vue": "^3.2.47",
     "vue-final-modal": "^3.4.11",

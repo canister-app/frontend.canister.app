@@ -1,7 +1,7 @@
 <script>
     import CanisterManager from "@/services/CanisterManager.js";
     import TokenManager from "@/services/TokenManager.js";
-    import { formatDate, formatter, ICStatus, unit8ArrToString, canisterStatus as statusLabel, showLoading} from "../IC/utils";
+    import { toHexString, formatDate, principalToText, formatter, ICStatus, unit8ArrToString, canisterStatus as statusLabel, showLoading} from "../IC/utils";
     import IconCopy from "@/components/icons/IconCopy.vue";
     import IconPlug from "@/components/icons/IconPlug.vue";
     import Loading from "@/components/Loading.vue";
@@ -17,6 +17,7 @@
                 statusLabel,
                 ICStatus,
                 formatter,
+                principalToText,
                 config,
                 canisterData: null,//Data for Token, NFT...etc
                 canisterInfo: null,
@@ -34,7 +35,8 @@
                 checkStatus: null,
                 checkIDStatus: null,
                 imageList: null,
-                standard: ""
+                standard: "",
+                moduleHash: ""
             }
         },
         methods: {
@@ -49,6 +51,8 @@
                 this.canisterStatus = null;
                 this.canisterStatus = await CanisterManager.getCanisterStatus(canister_id);
                 if(this.canisterStatus){
+                    console.log('this.canisterStatus: ', this.canisterStatus);
+                    this.moduleHash = this.canisterStatus.module_hash.length > -1?toHexString(this.canisterStatus.module_hash[0]):"";
                     this.checkICStatus = ICStatus(this.canisterStatus.status)
                 }
             },
@@ -61,6 +65,8 @@
                         canister_id: canister[1].canisterId,
                         action: canister[1].action,
                         maker: canister[1].maker,
+                        canisterName: canister[1].canisterName,
+                        imageName: canister[1].imageName,
                         time: formatDate(canister[1].time),
                     };
                 });
@@ -147,7 +153,9 @@
                             <h3 class="nk-block-title page-title"><router-link to="/my-canister">My Canisters</router-link> / <strong class="text-primary small" v-if="canisterInfo">{{canisterInfo.canisterName}}</strong></h3>
                             <div class="nk-block-des text-soft">
                                 <ul class="list-inline">
-                                    <li>Canister ID: <span class="text-base">{{canisterId}}</span></li>
+                                    <li>Canister ID:
+                                        <a v-if="canisterInfo" :href="`${config.IC_SCAN+canisterInfo.canisterId}`" target="_blank">{{canisterInfo.canisterId}}</a> <em class="icon ni ni-external"></em>
+                                    </li>
                                     <li v-if="canisterInfo && imageList">Installed Image: <router-link :to="`/store/${canisterInfo.imageId+'-'+imageList[canisterInfo.imageId]?.code}`">{{imageList[canisterInfo.imageId]?.name}}</router-link></li>
                                 </ul>
                             </div>
@@ -203,7 +211,7 @@
                                                 </div>
                                             </li>
                                         </ul>
-                                        <ul class="data-list is-compact">
+                                        <ul class="data-list is-compact" v-if="canisterInfo && canisterInfo.status!=3">
                                             <li class="data-item">
                                                 <div class="data-col">
                                                     <div class="data-label">Status</div>
@@ -213,19 +221,13 @@
                                             <li class="data-item">
                                                 <div class="data-col">
                                                     <div class="data-label">Freezing Threshold</div>
-                                                    <div class="data-value" v-if="canisterStatus">{{formatter(canisterStatus.freezing_threshold)}} kB</div>
+                                                    <div class="data-value" v-if="canisterStatus">{{formatter(canisterStatus.settings.freezing_threshold)}} kB</div>
                                                 </div>
                                             </li>
                                             <li class="data-item">
                                                 <div class="data-col">
                                                     <div class="data-label">Memory Size</div>
                                                     <div class="data-value" v-if="canisterStatus">{{formatter(canisterStatus.memory_size)}} kB</div>
-                                                </div>
-                                            </li>
-                                            <li class="data-item">
-                                                <div class="data-col">
-                                                    <div class="data-label">Module Hash</div>
-                                                    <div class="data-value">---</div>
                                                 </div>
                                             </li>
                                             <li class="data-item">
@@ -248,6 +250,12 @@
                                                     <div class="data-value" v-if="canisterInfo"><span class="small">{{formatDate(canisterInfo.updated)}}</span> </div>
                                                 </div>
                                             </li>
+                                            <li class="data-item">
+                                                <div class="data-col">
+                                                    <div class="data-label">Module Hash</div>
+                                                    <div class="data-value text-ellipsis small"><span class="small">{{moduleHash.slice(0,8)+'...'+moduleHash.slice(-8)}}</span> <IconCopy :text="moduleHash" item="Module hash"/></div>
+                                                </div>
+                                            </li>
                                         </ul>
                                     </div><!-- .card-inner -->
                                 </div><!-- .card-inner-group -->
@@ -262,6 +270,15 @@
                                     </div>
                                 </div>
                                 <div class="nk-block card card-bordered">
+                                    <ul class="data-list is-compact" v-if="!canisterData && canisterInfo">
+                                        <li class="data-item">
+                                            <div class="data-col">
+                                                <div class="">UI for this canister image is not available. Check with Candid UI
+                                                <a :href="`${config.IC_SCAN+canisterInfo.canisterId}`" target="_blank">{{canisterInfo.canisterId}}</a> <em class="icon ni ni-external"></em>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
                                     <ul class="data-list is-compact" v-if="canisterData">
                                         <li class="data-item">
                                             <div class="data-col">
@@ -269,14 +286,13 @@
                                                 <div class="data-value">
                                                     <img class="canister-logo" :src="canisterData.logo" v-if="canisterData.logo"/>
                                                     {{canisterData.symbol}} <IconCopy :text="canisterData.symbol" item="Symbol"/>
-                                                    &nbsp;<span class="badge bg-light">{{standard}}</span>
                                                 </div>
                                             </div>
                                         </li>
                                         <li class="data-item">
                                             <div class="data-col">
                                                 <div class="data-label w-30">Name</div>
-                                                <div class="data-value">{{canisterData.name}} <IconCopy :text="canisterData.name" item="Token Name"/></div>
+                                                <div class="data-value">{{canisterData.name}} &nbsp;<span class="badge bg-light">{{standard}}</span></div>
                                             </div>
                                         </li>
                                         <li class="data-item">
@@ -284,7 +300,7 @@
                                                 <div class="data-label w-30">Canister ID</div>
                                                 <div class="data-value" v-if="canisterInfo">
                                                     {{canisterInfo.canisterId}} <IconCopy :text="canisterInfo.canisterId" item="Canister ID"/>
-                                                    &nbsp;<button class="btn btn-sm btn-danger" @click="addToPlug"><IconPlug /> Add to Plug</button>
+                                                    &nbsp;<button class="btn btn-sm btn-danger" @click="addToPlug"><em class="ni ni-wallet"></em> &nbsp; Add to My Wallet</button>
                                                 </div>
                                             </div>
                                         </li>
@@ -312,6 +328,7 @@
                                                 <div class="data-value">{{canisterData.owner}} <IconCopy :text="canisterData.owner" item="Owner"/></div>
                                             </div>
                                         </li>
+
                                         <li class="data-item">
                                             <div class="data-col">
                                                 <div class="data-label w-30">Manage</div>
@@ -336,6 +353,33 @@
                                 </div><!-- .nk-block-head -->
                                 <div class="nk-block-head">
                                     <div class="nk-block-head-content">
+                                        <h5 class="nk-block-title title"><em class="icon ni ni-user-group-fill"></em> Controllers</h5>
+                                    </div>
+                                </div>
+                                <div class="card card-bordered">
+                                    <table class="table table-tranx is-compact">
+                                        <thead>
+                                        <tr class="tb-tnx-head">
+                                            <th>Role</th>
+                                            <th>Principal</th>
+                                            <th>Action</th>
+                                        </tr></thead>
+                                        <tbody>
+                                        <tr class="tb-tnx-item" v-for="controller in canisterStatus.settings.controllers" v-if="canisterStatus">
+                                            <td>
+                                                <span :class="`badge bg-outline-danger`" v-if="config.CANISTER_MANAGER_ID == principalToText(controller)">BLACKHOLE</span>
+                                            </td>
+                                            <td><span class="small"> {{principalToText(controller)}} <IconCopy :text="principalToText(controller)" item="Principal"/></span></td>
+                                            <td>
+                                                <span class="small"><button class="btn btn-sm btn-danger" @click="addToPlug" v-if="config.CANISTER_MANAGER_ID == principalToText(controller)"> Remove</button></span>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+
+                                </div>
+                                <div class="nk-block-head">
+                                    <div class="nk-block-head-content">
                                         <h5 class="nk-block-title title"><em class="icon ni ni-activity-round-fill"></em> Canister History</h5>
                                     </div>
                                 </div>
@@ -345,6 +389,8 @@
                                         <tr class="tb-tnx-head">
                                             <th>Action</th>
                                             <th>By</th>
+                                            <th>Canister Name</th>
+                                            <th>Image Name</th>
                                             <th>Time</th>
                                         </tr></thead>
                                         <tbody>
@@ -352,9 +398,9 @@
                                             <td>
                                                 <span :class="`badge bg-outline-${badges[history.action]}`">{{history.action}}</span>
                                             </td>
-                                            <td>
-                                                {{history.maker}}
-                                            </td>
+                                            <td><span class="small"> {{principalToText(history.maker).slice(0,10)+'...'+principalToText(history.maker).slice(-9)}}</span></td>
+                                            <td><span class="small">{{history.canisterName}}</span></td>
+                                            <td><span class="small">{{history.imageName}}</span></td>
                                             <td>
                                                 <span class="small">{{history.time}}</span>
                                             </td>

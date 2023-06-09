@@ -52,7 +52,7 @@
                 <div class="form-group">
                     <label class="form-label" for="transfer_fee">Transfer fee ($TOKEN) <IconRequired /></label>
                     <div class="form-control-wrap">
-                        <money3 type="text" :precision="6" class="form-control" id="transfer_fee" name="transfer_fee" placeholder="0.0001" required />
+                        <money3 type="text" :precision="4" class="form-control" id="transfer_fee" name="transfer_fee" placeholder="0.0001" required />
                     </div>
                 </div>
             </div>

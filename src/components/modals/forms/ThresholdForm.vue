@@ -22,7 +22,7 @@
             <div class="col-sm-12">
                 <div class="form-group">
                     <label class="form-label">Signers (Principal)</label>
-<!--                    <input type="hidden" class="form-control" placeholder="Signer principal #1" name="singer[]" value="2vxsx-fae">-->
+                    <input type="hidden" class="form-control" placeholder="Signer principal #1" name="singer[]" value="2vxsx-fae">
                     <div class="form-control-wrap pt-1">
                         <div class="input-group">
                             <input type="text" class="form-control" placeholder="Signer principal #1" name="signer[]" required>

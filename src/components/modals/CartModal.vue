@@ -1,7 +1,7 @@
 <script setup>
     import { walletData } from "../../services/store";
     import { useToast } from "vue-toastification";
-    import {walletManager} from "../../services/WalletManager";
+    import {WalletManager} from "../../services/WalletManager";
 </script>
 <script>
     import { VueFinalModal } from 'vue-final-modal'

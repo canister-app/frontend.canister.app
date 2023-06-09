@@ -73,3 +73,6 @@
 .mg-auto{
     margin: auto;
 }
+.swal2-container{
+    z-index: 10000;
+}

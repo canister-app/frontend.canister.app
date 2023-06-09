@@ -11,8 +11,14 @@ export default ({ IDL }) => {
         'price' : IDL.Nat64,
     });
     const canister_id = IDL.Principal;
-    const Result_4 = IDL.Variant({ 'ok' : IDL.Bool, 'err' : IDL.Text });
-    const Result = IDL.Variant({ 'ok' : canister_id, 'err' : IDL.Text });
+    const Result_3 = IDL.Variant({ 'ok' : IDL.Bool, 'err' : IDL.Text });
+    const Result_5 = IDL.Variant({ 'ok' : canister_id, 'err' : IDL.Text });
+    const DepositPing = IDL.Record({
+        'to_account' : IDL.Text,
+        'from_account' : IDL.Text,
+        'amount' : IDL.Nat64,
+    });
+    const Result_4 = IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text });
     const Time = IDL.Int;
     const CanisterInfo = IDL.Record({
         'status' : IDL.Nat,
@@ -25,10 +31,12 @@ export default ({ IDL }) => {
         'imageId' : IDL.Nat,
         'canisterId' : canister_id,
     });
-    const Result_3 = IDL.Variant({ 'ok' : CanisterInfo, 'err' : IDL.Text });
+    const Result_2 = IDL.Variant({ 'ok' : CanisterInfo, 'err' : IDL.Text });
     const CanisterHistory = IDL.Record({
         'maker' : IDL.Principal,
         'action' : IDL.Text,
+        'canisterName' : IDL.Text,
+        'imageName' : IDL.Text,
         'time' : Time,
         'canisterId' : canister_id,
     });
@@ -51,7 +59,7 @@ export default ({ IDL }) => {
         'settings' : CanisterSettings,
         'module_hash' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     });
-    const Result_2 = IDL.Variant({ 'ok' : CanisterStatus, 'err' : IDL.Text });
+    const Result_1 = IDL.Variant({ 'ok' : CanisterStatus, 'err' : IDL.Text });
     const CanisterResponse = IDL.Vec(IDL.Tuple(IDL.Nat, CanisterInfo));
     const CanisterImageCategory = IDL.Record({
         'status' : IDL.Nat,
@@ -62,6 +70,17 @@ export default ({ IDL }) => {
         IDL.Tuple(IDL.Nat, CanisterImageCategory)
     );
     const Balance = IDL.Record({ 'balance' : IDL.Nat, 'available' : IDL.Nat });
+    const DepositTransaction = IDL.Record({
+        'status' : IDL.Nat,
+        'from' : IDL.Principal,
+        'created_at' : Time,
+        'to_account' : IDL.Text,
+        'cycles' : IDL.Nat,
+        'from_account' : IDL.Text,
+        'completed_at' : Time,
+        'amount' : IDL.Nat64,
+        'block_height' : IDL.Nat,
+    });
     const CanisterImageNoWasm = IDL.Record({
         'created' : Time,
         'creator' : IDL.Principal,
@@ -78,15 +97,24 @@ export default ({ IDL }) => {
         'brief' : IDL.Text,
         'price' : IDL.Nat64,
     });
-    const Result_1 = IDL.Variant({
-        'ok' : CanisterImageNoWasm,
-        'err' : IDL.Text,
-    });
+    const Result = IDL.Variant({ 'ok' : CanisterImageNoWasm, 'err' : IDL.Text });
     const CanisterImageResponse = IDL.Vec(
         IDL.Tuple(IDL.Nat, CanisterImageNoWasm)
     );
     const ImageMapping = IDL.Record({ 'code' : IDL.Text, 'name' : IDL.Text });
     const CanisterImageMapping = IDL.Vec(IDL.Tuple(IDL.Nat, ImageMapping));
+    const UserInfo = IDL.Record({
+        'id' : IDL.Principal,
+        'bio' : IDL.Text,
+        'title' : IDL.Text,
+        'updated_at' : Time,
+        'verified' : IDL.Bool,
+        'username' : IDL.Text,
+        'created_at' : Time,
+        'links' : IDL.Opt(IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))),
+        'cycle_balance' : IDL.Nat,
+        'account' : IDL.Text,
+    });
     const Payment = IDL.Record({
         'to' : IDL.Principal,
         'from' : IDL.Principal,
@@ -94,43 +122,62 @@ export default ({ IDL }) => {
         'txId' : IDL.Nat,
         'amount' : IDL.Nat,
     });
-    const anon_class_32_1 = IDL.Service({
+    const anon_class_36_1 = IDL.Service({
         'add_canister_image' : IDL.Func([CanisterImageInit], [], []),
         'burnRate' : IDL.Func([], [IDL.Nat], ['query']),
-        'canister_action' : IDL.Func([canister_id, IDL.Text], [Result_4], []),
+        'canister_action' : IDL.Func([canister_id, IDL.Text], [Result_3], []),
         'canister_control' : IDL.Func(
             [canister_id, IDL.Text, IDL.Text, IDL.Nat, IDL.Vec(IDL.Nat8)],
-            [Result_4],
+            [Result_3],
             [],
         ),
         'create_category' : IDL.Func([IDL.Text, IDL.Text], [], ['oneway']),
-        'create_new_canister' : IDL.Func([IDL.Text], [Result], []),
+        'create_new_canister' : IDL.Func([IDL.Text], [Result_5], []),
         'cycles_withdraw' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
-        'delete_templates' : IDL.Func([IDL.Nat], [Result_4], []),
+        'delete_templates' : IDL.Func([IDL.Nat], [Result_3], []),
+        'deposit_ping' : IDL.Func([DepositPing], [Result_4], []),
+        'deposit_process' : IDL.Func([IDL.Nat], [Result_4], []),
         'edit_canister_image' : IDL.Func(
             [IDL.Nat, CanisterImageInit],
-            [Result_4],
+            [Result_3],
             [],
         ),
-        'getBalance' : IDL.Func([], [IDL.Nat], []),
         'get_admins' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
-        'get_canister' : IDL.Func([canister_id], [Result_3], ['query']),
+        'get_canister' : IDL.Func([canister_id], [Result_2], ['query']),
         'get_canister_history' : IDL.Func(
             [canister_id],
             [HistoryResponse],
             ['query'],
         ),
-        'get_canister_status' : IDL.Func([canister_id], [Result_2], []),
+        'get_canister_status' : IDL.Func([canister_id], [Result_1], []),
         'get_canisters' : IDL.Func([], [CanisterResponse], ['query']),
         'get_categories' : IDL.Func([], [ImageCategoryResponse], ['query']),
         'get_cycles' : IDL.Func([], [Balance], []),
-        'get_image' : IDL.Func([IDL.Nat], [Result_1], ['query']),
+        'get_deposits' : IDL.Func(
+            [],
+            [IDL.Vec(IDL.Tuple(IDL.Nat, DepositTransaction))],
+            ['query'],
+        ),
+        'get_image' : IDL.Func([IDL.Nat], [Result], ['query']),
         'get_images' : IDL.Func([], [CanisterImageResponse], ['query']),
         'get_images_list' : IDL.Func([], [CanisterImageMapping], ['query']),
-        'makePayment' : IDL.Func([], [Result], []),
+        'get_logs' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
+        'get_users' : IDL.Func(
+            [],
+            [IDL.Vec(IDL.Tuple(IDL.Principal, UserInfo))],
+            ['query'],
+        ),
+        'me' : IDL.Func([], [UserInfo], ['query']),
         'my_canister' : IDL.Func([], [CanisterResponse], ['query']),
+        'my_deposits' : IDL.Func(
+            [],
+            [IDL.Vec(IDL.Tuple(IDL.Nat, DepositTransaction))],
+            ['query'],
+        ),
         'price' : IDL.Func([], [IDL.Nat], ['query']),
         'setBurnRate' : IDL.Func([IDL.Nat], [], []),
+        'setInitCycles' : IDL.Func([IDL.Nat], [], []),
+        'setLimitCanister' : IDL.Func([IDL.Nat], [], []),
         'setPrice' : IDL.Func([IDL.Nat], [], []),
         'setSystemEnabled' : IDL.Func([IDL.Bool], [], []),
         'transactions' : IDL.Func(
@@ -143,6 +190,6 @@ export default ({ IDL }) => {
         'wallet_receive' : IDL.Func([], [], []),
         'whoami' : IDL.Func([], [IDL.Principal], []),
     });
-    return anon_class_32_1;
+    return anon_class_36_1;
 };
 export const init = ({ IDL }) => { return []; };

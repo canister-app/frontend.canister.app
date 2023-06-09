@@ -7,6 +7,9 @@ import router from "../router";
 import EventBus from "./EventBus";
 import {useToast} from "vue-toastification";
 const toast = useToast();
+import RosettaApi from '@/services/RosettaApi.js';
+export const rosettaApi = new RosettaApi();
+import _api from "@/ic/api.js";
 
 const loginSuccessAction = () =>{
     toast.success("Login successful!")
@@ -14,7 +17,7 @@ const loginSuccessAction = () =>{
     router.push({ path: '/' });
 }
 
-class WalletManager {
+class walletManager {
     checkLoginStatus(){
         var is_connected = localStorage.getItem("_w_connected");
         const logout = async() => {
@@ -323,9 +326,48 @@ class WalletManager {
             }
         });
     }
+    async getICPTransactions(address){
+        return await rosettaApi.getTransactionsByAccount(address).then(ts => {
+            if (!Array.isArray(ts)) return null;
+
+            var _ts = [];
+            ts.map(_t => {
+                if (_t.type !== "TRANSACTION") return false;
+                if (_t.status !== "COMPLETED") return false;
+                _ts.push({
+                    from: _t.account1Address,
+                    to: _t.account2Address,
+                    amount: Number(_t.amount / config.E8S),
+                    fee: Number(_t.fee / config.E8S),
+                    hash: _t.hash,
+                    timestamp: _t.timestamp,
+                    memo: Number(_t.memo),
+                });
+                return true;
+            });
+            _ts.reverse();
+            return _ts;
+        })
+    }
+    async getCycleBalance(){
+        try{
+            let user = await _api.authConnect().canister(config.CANISTER_MANAGER_ID).me();
+            walletData.setCycleBalance(Number(user.cycle_balance));
+        }catch (e) {
+
+        }
+    }
+    async getCycleRate(){
+        let rate = await _api.connect().canister(config.CANISTER_CYCLE_MINTING).get_icp_xdr_conversion_rate();
+        let _icpRate = Number(rate.data.xdr_permyriad_per_icp)/10_000;
+        walletData.setCycleRate(_icpRate);
+    }
+    async getMyDeposit(){
+        return await _api.authConnect().canister(config.CANISTER_MANAGER_ID).my_deposits();
+    }
 }
 
-export const walletManager = new WalletManager();
+export const WalletManager = new walletManager();
 export default {
-    walletManager
+    WalletManager
 }

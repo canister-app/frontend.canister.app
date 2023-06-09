@@ -262,10 +262,10 @@ import {walletData} from "../../services/store";
                                 </div>
                                 <div class="dropdown-inner">
                                     <ul class="link-list">
-                                        <li><a href="/my-profile"><em class="icon ni ni-wallet"></em><span>My Wallet</span></a></li>
+                                        <li><router-link to="/wallet"><em class="icon ni ni-wallet"></em><span>My Wallet</span></router-link></li>
                                         <li><a href="/my-account-setting"><em class="icon ni ni-setting-alt"></em><span>Account Setting</span></a></li>
                                         <li><a href="/my-profile-activity"><em class="icon ni ni-activity-alt"></em><span>Login Activity</span></a></li>
-                                        <li><a class="dark-switch" href="javascript:void(0)"><em class="icon ni ni-moon"></em><span>Dark Mode</span></a></li>
+                                        <li><a class="dark-switch-btn" href="javascript:void(0)"><em class="icon ni ni-moon"></em><span>Dark Mode</span></a></li>
                                     </ul>
                                 </div>
                                 <div class="dropdown-inner">

@@ -54,7 +54,7 @@
                             <li><em class="icon ni ni-star-half-fill"></em></li>
                             <li><em class="icon ni ni-star"></em></li>
                         </ul>
-                        <span class="amount ms-2">{{image.rating}} (78)</span>
+                        <span class="amount ms-2">{{image.rating}} (0)</span>
                     </div>
                 </div>
             </div>

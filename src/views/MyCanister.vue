@@ -49,8 +49,9 @@
                                 <a href="#" class="btn btn-icon btn-trigger toggle-expand me-n1" data-target="pageMenu"><em class="icon ni ni-menu-alt-r"></em></a>
                                 <div class="toggle-expand-content" data-content="pageMenu">
                                     <ul class="nk-block-tools g-3">
-                                        <li><a href="javascript:void(0)" @click="getMyCanister" class="btn btn-white btn-dim btn-outline-light"><em class="icon ni ni-reload"></em><span>Refresh</span></a></li>
-                                        <li><router-link to="/store" class="btn btn-primary"><em class="icon ni ni-plus"></em><span>Deploy</span></router-link></li>
+                                        <li><a href="javascript:void(0)" @click="getMyCanister" class="btn btn-white btn-dim btn-outline-light"><em class="icon ni ni-reload"></em></a></li>
+                                        <li><a href="javascript:void(0)" @click="getMyCanister" class="btn btn-white btn-dim btn-outline-primary"><em class="icon ni ni-link"></em><span>Link canister</span></a></li>
+                                        <li><router-link to="/store" class="btn btn-primary"><em class="icon ni ni-bag"></em><span>Store</span></router-link></li>
                                     </ul>
                                 </div>
                             </div>
@@ -207,13 +208,18 @@
                                                     <em class="icon ni ni-box"></em>
                                                 </div>
                                                 <div class="nk-tnx-type-text">
-                                                    <span class="tb-lead"><router-link :to="`/my-canister/${canister.canisterId}`">{{canister.canisterName}}</router-link> <IconCopy :text="canister.canisterName" item="Canister Name"/></span>
+                                                    <div class="tb-lead">
+                                                        <router-link :to="`/my-canister/${canister.canisterId}`">
+                                                            {{canister.canisterName}}
+                                                        </router-link>
+                                                        &nbsp;<span class="badge bg-light">{{config.STANDARD(canister.imageId)}}</span>
+                                                    </div>
                                                     <span class="tb-date">{{formatDate(canister.created)}}</span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="nk-tb-col tb-col-xxl">
-                                            <span v-if="canister.statusCode == 3" :class="`tb-lead-sub ${canister.statusCode == 3?'text-muted':''}`">{{canister.canisterId}}</span>
+                                            <span v-if="canister.statusCode == 3" :class="`tb-lead-sub ${canister.statusCode == 3?'text-muted':''}`"><del>{{canister.canisterId}}</del></span>
                                             <span class="tb-lead-sub" v-else><a :href="`${config.IC_SCAN+canister.canisterId}`" target="_blank">{{canister.canisterId}} <em class="icon ni ni-external"></em></a> <IconCopy :text="canister.canisterId" item="Canister ID"  v-if="canister.statusCode != 3"/></span>
                                         </div>
                                         <div class="nk-tb-col tb-col-lg">
@@ -260,13 +266,13 @@
                             </div><!-- .card-inner -->
                             <div class="card-inner">
                                 <ul class="pagination justify-content-center justify-content-md-start">
-                                    <li class="page-item"><a class="page-link" href="#">Prev</a></li>
-                                    <li class="page-item"><a class="page-link" href="#">1</a></li>
-                                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                    <li class="page-item"><span class="page-link"><em class="icon ni ni-more-h"></em></span></li>
-                                    <li class="page-item"><a class="page-link" href="#">6</a></li>
-                                    <li class="page-item"><a class="page-link" href="#">7</a></li>
-                                    <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                                    <li class="page-item"><a class="page-link disabled" href="#">Prev</a></li>
+<!--                                    <li class="page-item"><a class="page-link" href="#">1</a></li>-->
+<!--                                    <li class="page-item"><a class="page-link" href="#">2</a></li>-->
+<!--                                    <li class="page-item"><span class="page-link"><em class="icon ni ni-more-h"></em></span></li>-->
+<!--                                    <li class="page-item"><a class="page-link" href="#">6</a></li>-->
+<!--                                    <li class="page-item"><a class="page-link" href="#">7</a></li>-->
+                                    <li class="page-item"><a class="page-link disabled" href="#">Next</a></li>
                                 </ul>
                             </div><!-- .card-inner -->
                         </div><!-- .card-inner-group -->

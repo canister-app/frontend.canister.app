@@ -5,6 +5,8 @@ import StoreDetailView from '../views/StoreDetailView.vue'
 import PublisherDashboard from "../views/PublisherDashboard.vue";
 import MyCanister from "../views/MyCanister.vue";
 import MyCanisterDetail from "../views/MyCanisterDetail.vue";
+import PageNotFound from "../views/PageNotFound.vue";
+import Wallet from "../views/Wallet.vue";
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -12,6 +14,11 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView
+    },
+    {
+      path: '/wallet',
+      name: 'wallet',
+      component: Wallet
     },
     {
       path: '/store',
@@ -45,7 +52,8 @@ const router = createRouter({
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue')
-    }
+    },
+    { path: '/:pathMatch(.*)*', name: 'not-found', component: PageNotFound },
   ]
 })
 

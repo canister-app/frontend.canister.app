@@ -1,42 +1,35 @@
-import _apiHandler from "@/ic/api";
+import _api from "@/ic/api";
 import { IDL } from "@dfinity/candid";
 import {walletData} from "@/services/store";
 import config from "@/config";
 import {textToPrincipal} from "@/ic/utils";
 import {Principal} from "@dfinity/principal";
 import {principalToText, canisterStatus} from "../IC/utils";
-const API_PUBLIC = _apiHandler.connect(config.IC_ENDPOINT);
-const API_AUTHEN = () =>{
-    return _apiHandler.connect(config.IC_ENDPOINT, walletData.principal);
-}
 const getCategory = async () =>{
-    return await API_PUBLIC.canister(config.CANISTER_MANAGER_ID).get_categories();
+    return await _api.connect().canister(config.CANISTER_MANAGER_ID).get_categories();
 };
 //Deploy: Install/reinstall
 const handleDeploy = async (targetCanister, canisterName, method, imageId, _args) =>{
-    const _api = API_AUTHEN();
-    return await _api.canister(config.CANISTER_MANAGER_ID).canister_control(Principal.fromText(targetCanister), canisterName, method, Number(imageId), _args);
+    return await _api.authConnect().canister(config.CANISTER_MANAGER_ID).canister_control(Principal.fromText(targetCanister), canisterName, method, Number(imageId), _args);
 };
 const handleAction = async (targetCanister, method)=>{
-    const _api = _apiHandler.connect(config.IC_ENDPOINT, walletData.principal);
-    return await _api.canister(config.CANISTER_MANAGER_ID).canister_action(Principal.fromText(targetCanister), method);
+    return await _api.authConnect().canister(config.CANISTER_MANAGER_ID).canister_action(Principal.fromText(targetCanister), method);
 };
 const requestNewCanister = async (canisterName)=>{
-    const _api = API_AUTHEN();
     try{
-        return await _api.canister(config.CANISTER_MANAGER_ID).create_new_canister(canisterName);
+        return await _api.authConnect().canister(config.CANISTER_MANAGER_ID).create_new_canister(canisterName);
     }catch (e) {
         console.log('e:',e);
         return {"err": "Could not create new canister right now, please try again!"}
     }
 }
 const getCanisterImage = async(imageId)=>{
-    let _images = await API_PUBLIC.canister(config.CANISTER_MANAGER_ID).get_image(imageId);
+    let _images = await _api.connect().canister(config.CANISTER_MANAGER_ID).get_image(imageId);
     return _images["ok"];
 };
 //Get simple image for mapping data
 const getImageList = async()=>{
-    let _images = await API_PUBLIC.canister(config.CANISTER_MANAGER_ID).get_images_list();
+    let _images = await _api.connect().canister(config.CANISTER_MANAGER_ID).get_images_list();
     let _imgObj = {};
     _images.forEach( img => {
         _imgObj[Number(img[0])] = img[1];
@@ -44,7 +37,7 @@ const getImageList = async()=>{
     return _imgObj;
 }
 const getCanisterImages = async () =>{
-    let _images = await API_PUBLIC.canister(config.CANISTER_MANAGER_ID).get_images();
+    let _images = await _api.connect().canister(config.CANISTER_MANAGER_ID).get_images();
     let _images_data = _images.map( img => {
         return {
             image_id: img[0],
@@ -146,8 +139,9 @@ const createInitParams = async(formData)=>{
         _args = Array.from(
             new Uint8Array(
                 IDL.encode(
-                    [IDL.Principal, IDL.Text, IDL.Text, IDL.Nat64],
-                    [textToPrincipal(formData.collection_owner), formData.collection_name, formData.royalty_address, Number(formData.royalty_fee)])
+                    [IDL.Vec(IDL.Principal)],
+                    [formData.principals]
+                )
             )
         );
         break;
@@ -167,25 +161,18 @@ const createInitParams = async(formData)=>{
     }
     return _args;
 }
-const deployCanister = async(data)=>{
-    const _api = _apiHandler.connect(config.IC_ENDPOINT, walletData.principal);
-
-}
 const makePayment = async (data) => {
-    const _api = _apiHandler.connect(config.IC_ENDPOINT, walletData.principal);
-    let approve = await _api.canister(config.XCANIC_CANISTER_ID).approve(textToPrincipal(config.CANISTER_MANAGER_ID), data.amount*100000000);
+    let approve = await _api.authConnect().canister(config.XCANIC_CANISTER_ID).approve(textToPrincipal(config.CANISTER_MANAGER_ID), data.amount*100000000);
     console.log('approve: ', approve);
     let payment = _api.canister(config.CANISTER_MANAGER_ID).makePayment();
     console.log('payment: ', payment);
 };
 const getCanisterPrice = async ()=>{
-    const _api = _apiHandler.connect(config.IC_ENDPOINT, walletData.principal);
-    let price = await _api.canister(config.CANISTER_MANAGER_ID).price();
+    let price = await _api.authConnect().canister(config.CANISTER_MANAGER_ID).price();
     return price;
 };
 const getMyCanister = async ()=>{
-    const _api = API_AUTHEN();
-    let myCanister = await _api.canister(config.CANISTER_MANAGER_ID).my_canister();
+    let myCanister = await _api.authConnect().canister(config.CANISTER_MANAGER_ID).my_canister();
     console.log('myCanister: ', myCanister);
     return myCanister.map( cani =>{
         let _status = "---";
@@ -213,32 +200,31 @@ const getMyCanister = async ()=>{
     })
 };
 const getCanister = async (canisterId)=>{
-    const _api = API_AUTHEN();
-    let _canisterDetail= await _api.canister(config.CANISTER_MANAGER_ID).get_canister(textToPrincipal(canisterId));
+    let _canisterDetail= await _api.authConnect().canister(config.CANISTER_MANAGER_ID).get_canister(textToPrincipal(canisterId));
     if (Object.prototype.hasOwnProperty.call(_canisterDetail,"ok")){
         return _canisterDetail.ok;
     }else{
         return null;
     }
 };
+
 const getCanisterStatus = async (canisterId)=>{
-    const _api = API_AUTHEN();
-    let _canisterDetail= await _api.canister(config.CANISTER_MANAGER_ID).get_canister_status(textToPrincipal(canisterId));
-    if (Object.prototype.hasOwnProperty.call(_canisterDetail,"ok")){
-        return _canisterDetail.ok;
-    }else{
-        return null;
-    }
+    return await _api.authConnect().canister(config.CANISTER_IC_MANAGEMENT).canister_status({canister_id: textToPrincipal(canisterId)});
+    // let _canisterDetail= await _api.authConnect().canister(config.CANISTER_MANAGER_ID).get_canister_status(textToPrincipal(canisterId));
+    // if (Object.prototype.hasOwnProperty.call(_canisterDetail,"ok")){
+    //     return _canisterDetail.ok;
+    // }else{
+    //     return null;
+    // }
 };
 const getCanisterHistory = async (canisterId)=>{
-    const _api = _apiHandler.connect(config.IC_ENDPOINT);
-    let _history= await _api.canister(config.CANISTER_MANAGER_ID).get_canister_history(textToPrincipal(canisterId));
+    let _history= await _api.authConnect().canister(config.CANISTER_MANAGER_ID).get_canister_history(textToPrincipal(canisterId));
     return _history;
 };
+
 const getCanisterStatusCheck = async (canisterId) => {
     console.log('status: ', 'started!');
-    const _api = _apiHandler.connect(config.IC_ENDPOINT, walletData.principal);
-    let _status = await _api.canister("aaaaa-aa").canister_status({ canister_id: textToPrincipal(canisterId)});
+    let _status = await _api.authConnect().canister("aaaaa-aa").canister_status({ canister_id: textToPrincipal(canisterId)});
     console.log('status: ', _status);
     return _status;
 };
@@ -270,6 +256,6 @@ const _canisterManager = {
     createInitParams,
     handleDeploy,
     handleAction,
-    requestNewCanister
+    requestNewCanister,
 };
 export default _canisterManager;

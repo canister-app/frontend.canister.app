@@ -46,7 +46,7 @@
                     <em class="icon ni ni-cross"></em>
                 </a>
                 <div class="modal-header">
-                    <h5 class="modal-title"><span class="text-capitalize">{{action}}</span> <span class="text-blue" v-if="canisterData">{{canisterData.name}}</span> </h5>
+                    <h5 class="modal-title"><span class="text-capitalize">{{action}}</span> <span class="text-blue" v-if="canisterData">{{canisterData.symbol}}</span> </h5>
                 </div>
                 <div class="modal-body pt-3 pb-0">
                     <Transfer v-if="canisterData" :action="action" :canister_id="canisterId" :standard="standard" :symbol="canisterData.symbol" :transfer_fee="canisterData.transfer_fee"></Transfer>

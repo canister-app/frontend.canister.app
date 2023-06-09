@@ -1,17 +1,17 @@
 <script setup>
     import { walletData } from "../../services/store";
     import { useToast } from "vue-toastification";
-    import {walletManager} from "../../services/WalletManager";
+    import {WalletManager} from "../../services/WalletManager";
     const toast = useToast();
     const login = async (wallet)=>{
         switch (wallet) {
-            case "stoic": await walletManager.stoicWallet()
+            case "stoic": await WalletManager.stoicWallet()
                 break;
-            case "plug": await walletManager.plugWallet()
+            case "plug": await WalletManager.plugWallet()
                 break;
-            case "bitfinity": await walletManager.bitfinityWallet()
+            case "bitfinity": await WalletManager.bitfinityWallet()
                 break
-            case "nns": await walletManager.nnsWallet()
+            case "nns": await WalletManager.nnsWallet()
                 break
         }
     }

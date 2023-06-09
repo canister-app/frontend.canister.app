@@ -3,9 +3,11 @@
     import DeployModal from './modals/DeployModal.vue'
     import CartModal from "./modals/CartModal.vue";
     import TokenModal from "./modals/TokenModal.vue";
+    import TopupModal from "./modals/TopupModal.vue";
+    import DepositModal from "./modals/DepositModal.vue";
 
     export default {
-        components: {CartModal, LoginModal, DeployModal, TokenModal },
+        components: {DepositModal, TopupModal, CartModal, LoginModal, DeployModal, TokenModal },
         data() {
             return {}
         }
@@ -16,4 +18,6 @@
     <DeployModal />
     <CartModal />
     <TokenModal />
+    <DepositModal />
+    <TopupModal />
 </template>

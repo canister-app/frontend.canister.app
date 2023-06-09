@@ -5,6 +5,7 @@
     import config from "@/config"
     import {Principal} from "@dfinity/principal";
     import {useToast} from "vue-toastification";
+    import {walletData} from "@/services/store";
     import { showLoading, isMultiInput, textToPrincipal } from "@/IC/utils.js";
     import ThresholdForm from "./forms/ThresholdForm.vue";
     import DIP20Form from "./forms/DIP20Form.vue";
@@ -14,6 +15,8 @@
     import IconRequired from "../icons/IconRequired.vue";
     import {principalToText} from "../../IC/utils";
     import { format, unformat } from 'v-money3';
+    import ModalManager from "../../services/ModalManager";
+    import {WalletManager} from "../../services/WalletManager";
     const mask_option =  {
         decimal: ".",
         thousands: ",",
@@ -27,7 +30,7 @@
         thousands: ",",
         prefix: "",
         suffix: "",
-        precision: 6,
+        precision: 4,
         masked: false /* doesn't work with directive */,
     };
     export default {
@@ -35,6 +38,7 @@
         data() {
             return {
                 config,
+                walletData,
                 deployModal: false,
                 canisterImage: null,
                 myCanisters: null,
@@ -44,6 +48,12 @@
             }
         },
         methods: {
+            showDepositModal(){
+                ModalManager.showDeposit(true);
+            },
+            async refreshBalance(){
+                await walletData.getBalance();
+            },
             async handleDeploy(e){
                 console.log('this.canisterSelected', this.canisterSelected)
                 const targetCanister = this.canisterSelected.canister
@@ -94,6 +104,7 @@
                                     })
                                 }
                             }else{
+                                console.log('this.canisterSelected: ', this.canisterSelected);
                                 await this.deploy(this.canisterSelected, this.canisterName,"reinstall", _formData)
                             }
 
@@ -104,22 +115,31 @@
             async deploy(targetCanister, canisterName, installMode, formData){
                 let _args = await CanisterManager.createInitParams(formData);
                 showLoading('Deploying data to canister <a href="javascript:void(0)">'+targetCanister+'</a>, please wait...');
-
-                let result = await CanisterManager.handleDeploy(targetCanister, canisterName, installMode, this.canisterImage.imageId, _args);
-                if("ok" in result){
-                    window.Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        html: '<p>Your canister successfully deployed.</p><p>Manage your canister: <a href="/my-canister/'+targetCanister+'">'+targetCanister+'</a></p><p>View on ICScan: <a href="'+config.IC_SCAN+targetCanister+'" target="_blank">'+targetCanister+'</a> <em class="icon ni ni-external"></em>',
-                    })
-                    await this.getMyCanister();//Reload my canister
-                }else{
+                try{
+                    let result = await CanisterManager.handleDeploy(targetCanister, canisterName, installMode, this.canisterImage.imageId, _args);
+                    if("ok" in result){
+                        window.Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            html: '<p>Your canister successfully deployed.</p><p>Manage your canister: <a href="/my-canister/'+targetCanister+'">'+targetCanister+'</a></p><p>View on ICScan: <a href="'+config.IC_SCAN+targetCanister+'" target="_blank">'+targetCanister+'</a> <em class="icon ni ni-external"></em>',
+                        })
+                        await this.getMyCanister();//Reload my canister
+                    }else{
+                        window.Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: result.err,
+                        })
+                    }
+                }catch (e) {
                     window.Swal.fire({
                         icon: 'error',
                         title: 'Oops...',
-                        text: result.err,
+                        text: 'Something went wrong, please try again later.',
                     })
+                    console.error(e);
                 }
+
             },
             async getMyCanister(){
                 this.myCanisters = null;
@@ -131,7 +151,10 @@
                     { canisterId: "-1", canisterLabel: "Or Re-Install to existed Canister - Becareful!!!", heading: true, style: 'text-danger'}
                 ]
                 _myCanisters.forEach( cani =>{
-                    _init.push(cani)
+                    if(cani.statusCode !=3 ){
+                        _init.push(cani);//Push only running canister
+                    }
+
                 })
                 this.myCanisters = _init;
             },
@@ -212,6 +235,33 @@
                                     <div class="alert alert-fill alert-warning alert-icon">
                                         <em class="icon ni ni-alert-circle"></em>
                                         You are choosing to reinstall on the <strong>existed</strong> canister. This action will delete all existing data on this canister and replace it with a fresh install of this image. Check your canister <a :href="config.IC_SCAN+canisterSelected" class="alert-link" target="_blank">{{canisterSelected}}</a> <em class="icon ni ni-external"></em> on IC Scan again for make sure you know what you're doing!
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row pt-1" v-else>
+                                <div class="col-sm-12">
+                                    <div class="alert alert-fill alert-light p-1">
+                                        <ul class="preview-list">
+                                            <li class="preview-item">
+                                                <em class="icon ni ni-wallet"></em> <small>Your Balance:</small>
+                                            </li>
+                                            <li class="preview-item">
+                                                <span class="badge badge-dot bg-primary">{{Number(walletData?.balance)/config.E8S||"-"}} ICP</span>
+                                            </li>
+                                            <li class="preview-item">
+                                                <span class="badge badge-dot bg-danger">
+                                                    {{(Number(walletData?.cycleBalance)/config.CYCLES).toFixed(3)}} T Cycles
+                                                </span>
+                                                 <small> &nbsp; <a href="javascript:void(0)" @click="showDepositModal"><em class="icon ni ni-plus-c"></em> Deposit</a></small>
+                                            </li>
+                                            <li class="preview-item">
+
+                                            </li>
+                                            <li class="preview-item">
+                                                <small><a href="javascript:void(0)" @click="refreshBalance"><em class="ni ni-reload"></em> Refresh</a> </small>
+                                            </li>
+
+                                        </ul>
                                     </div>
                                 </div>
                             </div>

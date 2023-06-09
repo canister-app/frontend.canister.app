@@ -3,7 +3,7 @@ import config from "../config";
 import { walletData } from "../services/store";
 // Imports and re-exports candid interface
 import canic from './candid/canic.did.js';
-
+import IC from './candid/ic.did.js';
 //Import standard IDL
 import ICRC1 from './candid/icrc1.did.js';
 import DIP20 from './candid/dip20.did.js';
@@ -21,6 +21,7 @@ const _preloadedIdls = {
     'ledger' : LEDGER_CANISTER_ID,
     'ICRC-1' : ICRC1,
     'DIP20' : DIP20,
+    'IC': IC
 };
 class ExtensionActor {
     _canister = false;
@@ -49,11 +50,13 @@ class ExtensionActor {
 class ICnetwork {
     //map known canisters to preloaded IDLs
     _mapIdls = {
+        'aaaaa-aa' : IC,
         'governance' : governanceIDL,
         'ledger' : ledgerIDL,
         'ryjl3-tyaaa-aaaaa-aaaba-cai' : ledgerIDL,
         'rnczv-riaaa-aaaap-qbbwq-cai': canic,
         [config.CANISTER_MANAGER_ID]: canisterManager,
+        [config.CANISTER_CYCLE_MINTING]: cyclesIDL
     };
 
     _identity = false;
@@ -115,63 +118,7 @@ class ICnetwork {
         }
     }
 }
-export const getFolder = async (path) =>{
-    const _api = _apiHandle.connect("https://icp-api.io", walletData.principal?walletData.principal:null);
-    return await _api.canister(config.CANIC_APP).getFolder(path);
-}
-export const createFolder = async (path) =>{
-    const _api = _apiHandle.connect("https://icp-api.io", walletData.principal);
-    return await _api.canister(config.CANIC_APP).createFolder(path);
-}
-export const whoami = async () =>{
-    const _api = _apiHandle.connect("https://icp-api.io", walletData.principal);
-    return await _api.canister(config.CANIC_APP).whoami();
-}
-export const uploadFile = async (fileUpload) =>{
-    const _api = _apiHandle.connect("https://icp-api.io", walletData.principal);
-    return await _api.canister(config.CANIC_APP).createFile(fileUpload);
-}
-export const createFile = async (fileUpload) =>{
-    const _api = _apiHandle.connect("https://icp-api.io", walletData.principal);
-    return await _api.canister(config.CANIC_APP).createFile(fileUpload);
-}
-export const updateSetting = async (customDomain, isPublic) =>{
-    const _api = _apiHandle.connect("https://icp-api.io", walletData.principal);
-    return await _api.canister(config.CANIC_APP).updateSetting(customDomain, isPublic);
-}
-export const putFileChunk = async (fileId, chunk, sliceToNat) =>{
-    const _api = _apiHandle.connect("https://icp-api.io", walletData.principal);
-    return await _api.canister(config.CANIC_APP).putFileChunk(fileId, chunk, sliceToNat);
-}
-export const deleteAsset = async (_path) =>{
-    const _api = _apiHandle.connect("https://icp-api.io", walletData.principal);
-    return await _api.canister(config.CANIC_APP).deleteAsset(_path);
-}
-export const getSetting = async () =>{
-    const _api = _apiHandle.connect("https://icp-api.io", walletData.principal);
-    return await _api.canister(config.CANIC_APP).getSetting();
-}
-
-export const _apiHandle = {
-    connect : (host, identity) => new ICnetwork(host ? host : "https://icp-api.io", identity),
-}
-// export const _api = _apiHandle.connect("https://icp-api.io", walletData.principal);
-
-// const _api = createActor(canisterId,
-//     {
-//         agentOptions: {
-//             host: 'http://localhost:8000'
-//         }
-//     });
 export default {
-    connect : (host, identity) => new ICnetwork(host ? host : config.IC_ENDPOINT, identity),
-    getFolder,
-    createFolder,
-    whoami,
-    uploadFile,
-    createFile,
-    updateSetting,
-    getSetting,
-    putFileChunk,
-    deleteAsset
+    connect : (identity) => new ICnetwork(config.IC_ENDPOINT, identity),
+    authConnect: () => new ICnetwork(config.IC_ENDPOINT, walletData.principal)
 };

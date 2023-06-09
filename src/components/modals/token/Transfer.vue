@@ -126,7 +126,6 @@
         },
         mounted() {
             this.getBalance();
-            console.log('xxxx',this.transfer_fee, config.E8S,  (Number(this.transfer_fee)/config.E8S));
         },
         setup() {
             const toast = useToast();
@@ -162,9 +161,9 @@
                 </div>
             </div>
 
-            <div class="col-sm-6">
+            <div :class="`${action=='transfer'?'col-sm-6':'col-sm-12'}`">
                 <div class="form-group">
-                    <label class="form-label">Amount <IconRequired /></label>
+                    <label class="form-label">Amount to {{action}}<IconRequired /></label>
                     <div class="float-right" v-if="action=='transfer'">Balance: <a href="javascript:void(0)" title="Select max" class="" @click="selectMax">{{formatter(balance)}}</a> <span class="text-blue">{{symbol}}</span></div>
                     <div class="form-control-wrap">
                         <money3 class="form-control" v-model="amount" v-bind="config_mask" required />
@@ -177,6 +176,11 @@
                     <div class="form-control-wrap">
                         <input type="text" class="form-control" v-model="fees" placeholder="0" disabled>
                     </div>
+                </div>
+            </div>
+            <div class="col-sm-12" v-if="standard=='ICRC-1'">
+                <div class="alert alert-warning alert-icon">
+                    <em class="icon ni ni-alert-circle"></em> With the ICRC-1 standard, the  <strong>transfer</strong> action is equivalent to <strong>minting</strong> token for another principal. If you are the owner of the Token, you cannot transfer (mint) to yourself.
                 </div>
             </div>
             <div class="col-sm-12 text-center">

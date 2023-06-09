@@ -51,7 +51,7 @@ export const principalToAccountIdentifier = (p, s) => {
     ]);
     return toHexString(array2);
 };
-const getSubAccountArray = (s) => {
+export const getSubAccountArray = (s) => {
     if (Array.isArray(s)){
         return s.concat(Array(32-s.length).fill(0));
     } else {
@@ -71,7 +71,7 @@ const to32bits = num => {
     new DataView(b).setUint32(0, num);
     return Array.from(new Uint8Array(b));
 }
-const toHexString = (byteArray)  =>{
+export const toHexString = (byteArray)  =>{
     return Array.from(byteArray, function(byte) {
         return ('0' + (byte & 0xFF).toString(16)).slice(-2);
     }).join('')
@@ -118,12 +118,26 @@ export const showLoading = (text)=>{
         showConfirmButton: false
     });
 }
+export const showSuccess = (text)=>{
+    window.Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        html: text,
+    })
+}
+export const showError = (text)=>{
+    window.Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        html: text,
+    })
+}
 export const isMultiInput = (name)=>{
     const regex = /\[\]/g;
     return name.match(regex);
 }
 export const formatDate = (time)=>{
-    return moment.utc(Number(time)/1000000).format("MM/DD/YYYY HH:mm A");
+    return moment.utc(Number(time)/1000000).format("LLL");
 }
 export const timeAgo = (time)=>{
     return moment.utc(Number(time)/1000000).fromNow();
@@ -198,6 +212,8 @@ export const formatter = (number)=>{
 
 export default {
     showLoading,
+    showSuccess,
+    showError,
     genPreviewTag,
     checkIsValidDomain,
     rosettaApi,
@@ -214,5 +230,7 @@ export default {
     unit8ArrToString,
     canisterStatus,
     ICStatus,
-    formatter
+    formatter,
+    toHexString,
+    getSubAccountArray
 }

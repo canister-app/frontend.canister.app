@@ -10,7 +10,7 @@
   import PrimarySideBar from "./views/layout/PrimarySideBar.vue";
   import SideBar from "./views/layout/SideBar.vue";
   import Modal from "./components/Modal.vue";
-  import {walletManager} from "./services/WalletManager";
+  import {WalletManager} from "./services/WalletManager";
 
   export default {
     components: {PrimarySideBar, SideBar, HeaderView, FooterView, Modal},
@@ -37,7 +37,7 @@
     },
     created() {
       //Init
-      walletManager.checkLoginStatus();
+      WalletManager.checkLoginStatus();
 
     },
   }

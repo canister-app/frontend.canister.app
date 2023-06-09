@@ -46,6 +46,8 @@
                 chunks: null,
                 wasmModule: null,
                 CHUNKSIZE: 1024 * 1024 * 1.9,
+                new_category: '',
+                new_category_des: ''
             }
         },
         setup() {
@@ -230,6 +232,11 @@
                     callback(bytes);
                 }
             },
+            async createCategory() {
+                let _rs = await this.api.canister(config.CANISTER_MANAGER_ID).create_category(this.new_category, this.new_category_des);
+                await this.getTemplates();
+                console.log('rs: ', _rs);
+            },
             async createProposal() {
                 console.log('Action: ', this.selectList);
                 let _rs = await this.canisterAction(this.targetCanister, this.selectList);
@@ -243,7 +250,7 @@
             }
         },
         mounted() {
-            this.api = _apiHandler.connect(config.IC_ENDPOINT);
+            this.api = _apiHandler.connect();
             this.getMembers();
             this.getCategory();
             this.getTemplates();
@@ -322,6 +329,18 @@
 
                                                     <div class="tab-pane fade show" id="template" role="tabpanel" aria-labelledby="template-tab">
                                                         <div class="form-item mt-2">
+
+                                                            <div class="form-item mt-2">
+                                                                <h5>Category:</h5>
+                                                                <div class="mb-2">
+                                                                    <ul>
+                                                                        <li v-for="category in categories">{{category.name}}</li>
+                                                                    </ul>
+                                                                    New category : <input class="form-control input-sm" v-model="new_category" placeholder="Enter category name" size=30 required />
+                                                                    Description : <textarea class="form-control input-sm" v-model="new_category_des" placeholder="Description" rows=2 required></textarea>
+                                                                </div>
+                                                                <button class="btn btn-sm btn-danger mb-2" @click="createCategory">Create</button>
+                                                            </div>
                                                             <section>
                                                                 <h5 class=" mb-2">Canister Images:</h5>
                                                                 <button class="btn btn-sm btn-outline-secondary" @click="getTemplates">Refresh</button>
