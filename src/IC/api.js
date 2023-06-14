@@ -13,14 +13,15 @@ import canisterManager from './candid/canisterManager.did.js';
 import nnsIDL from './candid/nns.did.js';
 import cyclesIDL from './candid/cycles.did.js';
 import icLightHouse from './candid/icLightHouse.did.js'
-
+import icpSwap from './candid/icpSwap.did.js'
+import storage from './candid/storage.did.js'
 // CANISTER_ID is replaced by webpack based on node environment
 export const canisterId = config.CANIC_APP;//process.env.BUCKET_CANISTER_ID;
 const LEDGER_CANISTER_ID = "ryjl3-tyaaa-aaaaa-aaaba-cai";
 
 const _preloadedIdls = {
     'ledger' : LEDGER_CANISTER_ID,
-    'ICRC-1' : ICRC1,
+    'ICRC1' : ICRC1,
     'DIP20' : DIP20,
     'IC': IC
 };
@@ -57,8 +58,10 @@ class ICnetwork {
         'ryjl3-tyaaa-aaaaa-aaaba-cai' : ledgerIDL,
         'rnczv-riaaa-aaaap-qbbwq-cai': canic,
         'j4d4d-pqaaa-aaaak-aanxq-cai': icLightHouse,
+        '4qix3-5iaaa-aaaag-qbljq-cai': icpSwap,
         [config.CANISTER_MANAGER_ID]: canisterManager,
-        [config.CANISTER_CYCLE_MINTING]: cyclesIDL
+        [config.CANISTER_CYCLE_MINTING]: cyclesIDL,
+        [config.CANISTER_STORAGE_ID]: storage,
     };
 
     _identity = false;

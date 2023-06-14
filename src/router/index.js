@@ -7,6 +7,7 @@ import MyCanister from "../views/MyCanister.vue";
 import MyCanisterDetail from "../views/MyCanisterDetail.vue";
 import PageNotFound from "../views/PageNotFound.vue";
 import Wallet from "../views/Wallet.vue";
+import Marketplace from "../views/Marketplace.vue";
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -24,6 +25,11 @@ const router = createRouter({
       path: '/store',
       name: 'store',
       component: StoreView
+    },
+    {
+      path: '/marketplace',
+      name: 'marketplace',
+      component: Marketplace
     },
     {
       path: '/publisher-dashboard',

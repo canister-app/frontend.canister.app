@@ -4,6 +4,7 @@
 <script>
     import CanisterManager from "@/services/CanisterManager";
     import ModalManager from "../services/ModalManager";
+    import router from "../router";
     export default {
         data(){
             return{
@@ -13,8 +14,12 @@
         },
         methods: {
           async getImage(imageId){
-              this.canisterImage = await CanisterManager.getCanisterImage(Number(imageId));
-              this.canisterImage['imageId'] = Number(imageId);
+              try{
+                  this.canisterImage = await CanisterManager.getCanisterImage(Number(imageId));
+                  this.canisterImage['imageId'] = Number(imageId);
+              }catch (e) {
+                  await router.push("/404-not-found")
+              }
               console.log('this.imageInfo: ', this.canisterImage);
           },
           showModalDeploy(){
@@ -62,10 +67,13 @@
                                         <div class="card-inner">
                                             <div class="user-card user-card-s2">
                                                 <div class="user-avatar lg bg-primary">
-                                                    <span>IC</span>
+                                                    <img :src="canisterImage.thumbnail" class="canister-thumbnail"/>
                                                 </div>
                                                 <div class="user-info">
-                                                    <div class="badge bg-outline-light rounded-pill ucap">{{config.CANISTER_IMAGE_CATEGORY[canisterImage.category]}}</div>
+                                                    <div class="badge bg-outline-light rounded-pill ucap">
+                                                        {{config.CANISTER_IMAGE_CATEGORY[canisterImage.category]}}
+                                                        <div class="user-status-verified"></div>
+                                                    </div>
                                                     <h5>{{canisterImage.name}}</h5>
                                                     <span class="sub-text">Dfinity Foundation</span>
                                                 </div>

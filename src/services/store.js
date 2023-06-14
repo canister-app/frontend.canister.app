@@ -30,7 +30,8 @@ export const walletData = reactive({
     currentAccount: _account_index?_account_index:0,
     isModalVisible: false,
     lastUpdate: null,
-    icpRate: null,
+    icpRate: 0,
+    icpPrice: 0,
     cycleRate: 3.5127,
     setIdentity(principal){
         this.principal = principal;
@@ -75,6 +76,7 @@ export const walletData = reactive({
         this.stakingBalance = 0;
         this.xcanicBalance = 0;
         this.balance = 0;
+        this.cycleBalance = 0;
     },
     setCanicBalance(canic){
         this.canic = canic
@@ -84,6 +86,9 @@ export const walletData = reactive({
     },
     setLoginState(status){
         this.isLogged = status
+    },
+    setICPPrice(price){
+        this.icpPrice = price
     },
     setCanicListing(canic){
         this.caniListing = canic
@@ -107,6 +112,7 @@ export const walletData = reactive({
     },
     async getBalance() {
         if(this?.account?.address){
+            console.log('get balance')
             await rosettaApi.getAccountBalance(this.account.address).then(b =>{
                 this.balance = Number(b);
             })
@@ -133,13 +139,30 @@ export const walletData = reactive({
     async getRateICP(){
         if (!this.lastUpdate || ((Date.now()-this.lastUpdate) > (10*60*1000))) {
             this.lastUpdate = Date.now();
-            axios.get(config.backend_api+'get_icp_rate').then(r => {
-                // this.icpRate = Number(r.data.price);
-                this.icpRate = r.data.price;
-                // console.log(this.lastUpdate, ' - Get Rate:', r.data.price)
-            }).catch(Err =>{
-                console.log('Network Error: ', Err)
-            });
+            const icpPrice = await axios.get(
+                "https://api.coinbase.com/v2/prices/ICP-USD/buy"
+            ).then((res) => {
+                    console.log('res.data:', res.data.data.amount)
+                    this.icpPrice = res.data.data.amount;
+                })
+            //
+            // const icpXdrPrice = await axios.get(
+            //     "https://ic-api.internetcomputer.org/api/v3/icp-xdr-conversion-rates"
+            // )
+            //     .then((res) => {
+            //         console.log(res.data);
+            //         console.log('xdr', res.data.icp_xdr_conversion_rates[0][1] / 10000)
+            //     });
+            //
+            // this.icpRate = icpPrice / icpXdrPrice;
+            //
+            // axios.get(config.backend_api+'get_icp_rate').then(r => {
+            //     // this.icpRate = Number(r.data.price);
+            //     this.icpRate = r.data.price;
+            //     // console.log(this.lastUpdate, ' - Get Rate:', r.data.price)
+            // }).catch(Err =>{
+            //     console.log('Network Error: ', Err)
+            // });
         }
     },
 })

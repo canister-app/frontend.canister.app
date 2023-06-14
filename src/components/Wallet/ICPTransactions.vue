@@ -32,8 +32,8 @@
                     <span class="tb-product">
                         <span class="title"><small>
                             {{transaction.to==currentAddress?'from:':'to:'}} <router-link :to="`/account/${transaction.to==currentAddress?transaction.from:transaction.to}`">{{transaction.to==currentAddress?transaction.from:transaction.to}}</router-link>
-                        <div>
-                            TxnHash: <a :href="`https://icscan.io/transaction/${transaction.hash}`"  class="txn-hash" target="_blank">{{transaction.hash}}</a>
+                        <div class="sub-text">
+                            TxnHash: <a :href="`https://icscan.io/transaction/${transaction.hash}`" class="text-base" target="_blank">{{transaction.hash}}</a> <em class="ni ni-external"></em>
                         </div>
                         </small></span>
                     </span>

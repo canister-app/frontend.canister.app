@@ -13,17 +13,25 @@ export default ({ IDL }) => {
     const canister_id = IDL.Principal;
     const Result_3 = IDL.Variant({ 'ok' : IDL.Bool, 'err' : IDL.Text });
     const Result_5 = IDL.Variant({ 'ok' : canister_id, 'err' : IDL.Text });
+    const Time = IDL.Int;
+    const CyclesTransaction = IDL.Record({
+        'to' : IDL.Principal,
+        'method' : IDL.Nat,
+        'from' : IDL.Principal,
+        'time' : Time,
+        'amount' : IDL.Nat,
+    });
     const DepositPing = IDL.Record({
         'to_account' : IDL.Text,
         'from_account' : IDL.Text,
         'amount' : IDL.Nat64,
     });
     const Result_4 = IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text });
-    const Time = IDL.Int;
     const CanisterInfo = IDL.Record({
         'status' : IDL.Nat,
         'created' : Time,
         'canisterName' : IDL.Text,
+        'canisterType' : IDL.Nat,
         'owner' : IDL.Principal,
         'cycles' : IDL.Nat,
         'cycles_updated' : Time,
@@ -122,7 +130,7 @@ export default ({ IDL }) => {
         'txId' : IDL.Nat,
         'amount' : IDL.Nat,
     });
-    const anon_class_36_1 = IDL.Service({
+    const anon_class_37_1 = IDL.Service({
         'add_canister_image' : IDL.Func([CanisterImageInit], [], []),
         'burnRate' : IDL.Func([], [IDL.Nat], ['query']),
         'canister_action' : IDL.Func([canister_id, IDL.Text], [Result_3], []),
@@ -133,6 +141,11 @@ export default ({ IDL }) => {
         ),
         'create_category' : IDL.Func([IDL.Text, IDL.Text], [], ['oneway']),
         'create_new_canister' : IDL.Func([IDL.Text], [Result_5], []),
+        'cycles_history' : IDL.Func(
+            [],
+            [IDL.Vec(IDL.Tuple(IDL.Nat, CyclesTransaction))],
+            ['query'],
+        ),
         'cycles_withdraw' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
         'delete_templates' : IDL.Func([IDL.Nat], [Result_3], []),
         'deposit_ping' : IDL.Func([DepositPing], [Result_4], []),
@@ -190,6 +203,6 @@ export default ({ IDL }) => {
         'wallet_receive' : IDL.Func([], [], []),
         'whoami' : IDL.Func([], [IDL.Principal], []),
     });
-    return anon_class_36_1;
+    return anon_class_37_1;
 };
 export const init = ({ IDL }) => { return []; };

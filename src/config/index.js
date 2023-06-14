@@ -28,6 +28,7 @@ const config = {
     CANISTER_MANAGER_ID: NETWORK[ENV]['canister_id'],
     CANISTER_CYCLE_MINTING: "rkp4c-7iaaa-aaaaa-aaaca-cai",
     CANISTER_IC_MANAGEMENT: "aaaaa-aa",
+    CANISTER_STORAGE_ID: "psh4l-7qaaa-aaaap-qasia-cai",
     LEDGER_CANISTER_ID: "ryjl3-tyaaa-aaaaa-aaaba-cai",
     CANIC_CANISTER_URL: CANIC_CANISTER_URL,
     CUSTOM_DOMAIN_MAXLENGTH: 32,//Max length for custom domain
@@ -42,7 +43,7 @@ const config = {
     },
     STANDARD: (imageId) =>{
         switch (Number(imageId)) {
-            case 1000: return "ICRC-1";break;
+            case 1000: return "ICRC1";break;
             case 1001: return "NFT";break;
             case 1004: return "DIP20";break;
         }

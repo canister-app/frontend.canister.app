@@ -8,6 +8,7 @@ import moment from "moment";
 export const rosettaApi = new RosettaApi();
 import { useToast } from 'vue-toastification'
 const toast = useToast();
+import numbro from "numbro";
 
 const isHex = (h) => {
     var regexp = /^[0-9a-fA-F]+$/;
@@ -118,6 +119,9 @@ export const showLoading = (text)=>{
         showConfirmButton: false
     });
 }
+export const closeSwal = ()=>{
+    window.Swal.close();
+}
 export const showSuccess = (text)=>{
     window.Swal.fire({
         icon: 'success',
@@ -209,8 +213,17 @@ export const ICStatus = (statusObj)=>{
 export const formatter = (number)=>{
     return number?new Intl.NumberFormat().format(number):number;
 }
-
+export const formatCurrency = (number, average)=>{
+    return numbro(number).format({thousandSeparated: true, average: average})
+}
+export const shortPrincipal = (principal, num)=>{
+    if(!num) num = 9;
+    if(principal && principal.length >9){
+        return principal.slice(0,num)+'...'+principal.slice(-num)
+    }else return principal;
+}
 export default {
+    closeSwal,
     showLoading,
     showSuccess,
     showError,
@@ -232,5 +245,7 @@ export default {
     ICStatus,
     formatter,
     toHexString,
-    getSubAccountArray
+    getSubAccountArray,
+    formatCurrency,
+    shortPrincipal
 }

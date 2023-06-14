@@ -1,8 +1,3 @@
-<script setup>
-    import config from "@/config";
-    import '@vueup/vue-quill/dist/vue-quill.snow.css';
-
-</script>
 <script>
     import { walletData } from "@/services/store";
     import { textToPrincipal, principalToText } from "../IC/utils.js";
@@ -14,22 +9,29 @@
     import {Principal} from "@dfinity/principal";
     import {init} from "@/IC/candid/icrc1.did.js"
     import { QuillEditor } from '@vueup/vue-quill'
-
+    import config from "@/config";
+    import '@vueup/vue-quill/dist/vue-quill.snow.css';
+    import StorageManager from "@/services/StorageManager";
+    import IconLoading from "@/components/icons/IconLoading.vue";
+    import {showLoading, showSuccess} from "../IC/utils";
+    import ModalManager from "../services/ModalManager";
+    import ImageManager from "../services/ImageManager";
     const MAX_CHUNK_SIZE = 1024 * 1024 * 1.9; // 1.9MB
+    const encodeArrayBuffer = (file) => Array.from(new Uint8Array(file));
 
     export default {
-        name: 'AppFaucet',
-        props: ['logout'],
-        components: {QuillEditor },
+        components: {QuillEditor,IconLoading },
         data() {
             return {
                 api: null,
                 moment,
+                config,
                 installArgument: "psh4l-7qaaa-aaaap-qasia-cai",
                 categories: [], //List template category
                 templates: [], //List template
                 template_name: '',
                 template_description: '',
+                template_thumbnail: '',
                 template_price: 0,
                 template_community: '',
                 template_brief: '',
@@ -47,7 +49,10 @@
                 wasmModule: null,
                 CHUNKSIZE: 1024 * 1024 * 1.9,
                 new_category: '',
-                new_category_des: ''
+                new_category_des: '',
+                uploadFiles: [],
+                uploadedFiles: [],
+                isLoading: false
             }
         },
         setup() {
@@ -66,7 +71,9 @@
                 });
             },
             async editTemplate(template){
-                this.$refs.templateModal.showModal(template);
+                let _image = template;
+                _image.status = true;
+                ModalManager.showImageModal(_image)
             },
             async canisterAction(target, action){
                 this.showLoading(action+'ing...');
@@ -75,7 +82,7 @@
                     let _owner = Principal.fromText("2vxsx-fae");
                     console.log('installing...............', targetCanister)
                     let formData = {
-                        token_standard: "ICRC-1",
+                        token_standard: "ICRC1",
                         token_name: "New ICRC Token",
                         token_symbol: "NEW ICRC",
                         transfer_fee: 0,
@@ -120,11 +127,10 @@
                     confirmButtonText: 'Yes, I am sure!',
                 }).then(async (result) => {
                     if (result.isConfirmed) {
-                        this.showLoading('Creating new canister template...');
+                        this.showLoading('Creating new canister image...');
                         console.log("Clear uploaded!");
                         await this.api.canister(config.CANISTER_MANAGER_ID).upload_clear();
                         console.log("Completed!");
-                        const encodeArrayBuffer = (file) => Array.from(new Uint8Array(file));
                         let chunk = 1;
                         for (
                             let byteStart = 0;
@@ -139,7 +145,7 @@
                         }
                         let _imageObj = {
                             name: this.template_name,
-                            thumbnail: [],
+                            thumbnail: [this.template_thumbnail],
                             code: this.template_code,
                             repo: this.template_repo,
                             category: this.template_category,
@@ -149,9 +155,9 @@
                             metadata: []
                         }
                         console.log('_imageObj: ', _imageObj);
-                        let _template = await this.api.canister(config.CANISTER_MANAGER_ID).add_canister_image(_imageObj);
-                        this.getTemplates();//Refresh template
-                        window.Swal.fire({icon: 'success', title: 'Success', text: 'Canister template created!'});
+                        let _template = await ImageManager.createImage(_imageObj);
+                        await this.getTemplates();//Refresh template
+                        window.Swal.fire({icon: 'success', title: 'Success', text: 'Canister image created!'});
                     }
                 })
             },
@@ -189,13 +195,7 @@
                 })
             },
             async getCategory(){
-                let _category = await this.api.canister(config.CANISTER_MANAGER_ID).get_categories();
-                this.categories = _category.map( cate => {
-                    return {
-                        category_id: cate[0],
-                        name: cate[1].name,
-                    };
-                });
+                this.categories = await ImageManager.getCategory();
             },
             async getTemplates(loading){
 
@@ -247,6 +247,68 @@
             },
             goBack(){
                 this.$router.back();
+            },
+            async prepairUpload(e){
+                console.log('select file: ', e)
+                if(this.uploadFiles.length > 0){
+                    this.uploadFiles = this.uploadFiles.concat(Array.from(e.target.files));//Push file to existed array
+                }else{
+                    this.uploadFiles =  Array.from(e.target.files);
+                }
+            },
+            async getFileInit(file) {
+                const chunkCount = Number(Math.ceil(file.size / MAX_CHUNK_SIZE));
+                return {
+                    chunkCount,
+                    fileSize: file.size,
+                    name: file.name,
+                    path: file.name,
+                    mimeType: file.type
+                };
+            },
+            async uploadFolder() {
+                for (let [idx, file] of this.uploadFiles.entries()) {
+                    if(file.size < 1000000){//Less than 1MB
+                        showLoading("Uploading file "+file.name+'...');
+                        const fileInit = await this.getFileInit(file);
+                        const [fileId] = await StorageManager.createFile(fileInit);
+                        let chunk = 1;
+                        for (
+                            let byteStart = 0;
+                            byteStart < file.size;
+                            byteStart += MAX_CHUNK_SIZE, chunk += 1
+                        ) {
+                            let fileSlice = file.slice(byteStart, Math.min(file.size, byteStart + MAX_CHUNK_SIZE), file.type);
+                            let fileSliceBuffer = (await fileSlice.arrayBuffer()) || new ArrayBuffer(0);
+                            let sliceToNat = encodeArrayBuffer(fileSliceBuffer);
+                            await StorageManager.putFileChunk(fileId, chunk, sliceToNat);
+                            console.log('Uploaded: ', file.name);
+                        }
+                    }
+                }
+                showSuccess(this.uploadFiles.length+" file(s) has been uploaded successful!");
+                await this.getFiles();
+            },
+            async getFiles(){
+                this.isLoading = true;
+                this.uploadedFiles = await StorageManager.getFiles();
+                this.isLoading = false;
+                console.log('this.uploadedFiles: ', this.uploadedFiles);
+            },
+            async deleteFile(fileId){
+                window.Swal.fire({
+                    icon: 'question',
+                    text: 'Warning: Are you sure you want to delete file: '+fileId,
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, I am sure!',
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        showLoading("Deleting file "+fileId);
+                        this.uploadedFiles = await StorageManager.removeFile(fileId);
+                        showSuccess(fileId+" has been deleted successful!");
+                        await this.getFiles();
+                    }
+                });
             }
         },
         mounted() {
@@ -301,6 +363,10 @@
                                                     </li>
                                                     <li class="nav-item " role="presentation">
                                                         <button class="nav-link" id="canister-tab" data-bs-toggle="tab" data-bs-target="#canister" type="button" role="tab" aria-controls="owned" aria-selected="false"><span class="ni ni-box"></span> Canister Manager </button>
+                                                    </li>
+
+                                                    <li class="nav-item " role="presentation">
+                                                        <button class="nav-link" id="storage-tab" data-bs-toggle="tab" data-bs-target="#storage" type="button" role="tab" aria-controls="owned" aria-selected="false" @click="getFiles"><span class="ni ni-box"></span> Storage </button>
                                                     </li>
 
                                                 </ul>
@@ -380,7 +446,7 @@
                                                                 </div>
                                                                 <div class="mb-3">
                                                                     <label class="mb-2 form-label">Image Code:</label>
-                                                                    <input type="text" class="form-control form-control-s1" placeholder="ICRC-1" v-model="template_code" required>
+                                                                    <input type="text" class="form-control form-control-s1" placeholder="ICRC1" v-model="template_code" required>
                                                                 </div>
                                                                 <div class="mb-3">
                                                                     <label class="mb-2 form-label">Price:</label>
@@ -389,6 +455,9 @@
                                                                 <div class="mb-3">
                                                                     <label class="mb-2 form-label">Image Repo:</label>
                                                                     <input type="text" class="form-control form-control-s1" placeholder="github.com" v-model="template_repo" required>
+                                                                </div> <div class="mb-3">
+                                                                    <label class="mb-2 form-label">Thumbnail:</label>
+                                                                    <input type="text" class="form-control form-control-s1" placeholder="Link to thumbnail" v-model="template_thumbnail" required>
                                                                 </div>
                                                                 <div class="mb-3">
                                                                     <label class="mb-2 form-label">Image Category:</label>
@@ -488,6 +557,55 @@
                                                         </div>
                                                         ------------------------------------------------------------------
                                                     </div>
+
+                                                    <div class="tab-pane fade" id="storage" role="tabpanel" aria-labelledby="canister-tab">
+                                                        <div class="form-item mt-2">
+                                                        <input type="file" id="1syncFolder" name="fileList"  multiple="multiple" @change="prepairUpload($event)" class="form-control" />
+                                                            <br />
+                                                        <button class="btn btn-primary" @click="uploadFolder()" >
+                                                            Start Upload &nbsp;<i class="ni ni-upload-cloud"></i>
+                                                        </button>&nbsp;
+                                                            <button class="btn btn-outline-light" @click="getFiles()" >
+                                                                Get Files &nbsp;<i class="ni ni-download-cloud"></i>
+                                                        </button>
+                                                        </div>
+
+                                                        <div v-if="isLoading" class="pt-3">
+                                                            <IconLoading /> Getting files...
+                                                        </div>
+                                                        <div v-if="!isLoading" class="pt-3">
+                                                        <table class="table table-sm  table-hover">
+                                                            <thead>
+                                                            <tr>
+                                                                <th>Name</th>
+                                                                <th>Preview</th>
+                                                                <th>Mime</th>
+                                                                <th>Size</th>
+                                                                <th>Action</th>
+                                                            </tr>
+                                                            </thead>
+                                                            <tbody v-if="uploadedFiles">
+                                                            <tr v-for="(file, idx) in uploadedFiles[0]" v-bind:key="idx">
+                                                                <td>
+                                                                    {{file[1].name}}
+                                                                </td>
+                                                                <td>
+                                                                    <img :src="`https://${config.CANISTER_STORAGE_ID}.raw.icp0.io/${file[0]}`" class="preview-image"/>
+                                                                </td>
+                                                                <td>
+                                                                    {{file[1].mimeType}}
+                                                                </td>
+                                                                <td>
+                                                                    {{Number(file[1].fileSize)/1000+' KB'}}
+                                                                </td>
+                                                                <td>
+                                                                    <button type="button" class="btn btn-sm btn-danger" @click="deleteFile(file[1].fileId)">Delete</button>
+                                                                </td>
+                                                            </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        </div>
+                                                    </div>
                                                 </div>
 
 
@@ -566,5 +684,8 @@
     }
     .ql-container{
         height: 110px !important;
+    }
+    .preview-image{
+        height: 48px;
     }
 </style>

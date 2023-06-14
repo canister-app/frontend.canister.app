@@ -17,7 +17,7 @@
         data() {
             return {
                 config,
-                walletData,
+                walletData: ref(walletData),
                 depositModal: false,
                 icp: ref(0),
                 cycles: ref(0),
@@ -124,7 +124,7 @@
                                     <em class="icon ni ni-wallet"></em> Your Balance:
                                 </li>
                                 <li class="preview-item">
-                                    <span class="badge badge-dot bg-primary">{{walletData?.balance/config.E8S||"-"}} ICP</span>
+                                    <span class="badge badge-dot bg-primary">{{walletData.balance/config.E8S||"0"}} ICP</span>
                                 </li>
                                 <li class="preview-item">
                                     <span class="badge badge-dot bg-danger">{{(Number(walletData?.cycleBalance)/config.CYCLES).toFixed(4)}} T Cycles</span>
@@ -161,11 +161,11 @@
                                 </div>
                             </div>
                         </div>
-<!--                        <div class="col-12 pb-2">-->
-<!--                            <p class=" text-danger">-->
-<!--                                <em class="icon ni ni-alert"></em> You can't withdrawal of your funds once a deposit has been made!-->
-<!--                            </p>-->
-<!--                        </div>-->
+                        <div class="col-12 pb-2">
+                            <p class="text-danger">
+                                <em class="icon ni ni-alert"></em> Cycles are used to create new canisters, top up existing canisters on the IC network, and are <strong>non-refundable</strong>. Please consider this before making a deposit!
+                            </p>
+                        </div>
                         <div class="col-sm-12 text-center">
                             <button type="button" class="btn btn-primary btn-block" @click="depositICP">
                                 <em class="icon ni ni-plus-fill-c"></em> Deposit

@@ -5,9 +5,10 @@
     import TokenModal from "./modals/TokenModal.vue";
     import TopupModal from "./modals/TopupModal.vue";
     import DepositModal from "./modals/DepositModal.vue";
+    import ImageModal from "./modals/ImageModal.vue";
 
     export default {
-        components: {DepositModal, TopupModal, CartModal, LoginModal, DeployModal, TokenModal },
+        components: {ImageModal, DepositModal, TopupModal, CartModal, LoginModal, DeployModal, TokenModal },
         data() {
             return {}
         }
@@ -20,4 +21,5 @@
     <TokenModal />
     <DepositModal />
     <TopupModal />
+    <ImageModal />
 </template>

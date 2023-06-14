@@ -3,7 +3,6 @@ import config from "../config";
 import {principalToAccountIdentifier} from "../IC/utils";
 import {AuthClient} from "@dfinity/auth-client";
 import {walletData} from "./store";
-import router from "../router";
 import EventBus from "./EventBus";
 import {useToast} from "vue-toastification";
 const toast = useToast();
@@ -14,7 +13,6 @@ import _api from "@/ic/api.js";
 const loginSuccessAction = () =>{
     toast.success("Login successful!")
     EventBus.emit("showLoginModal", false)
-    router.push({ path: '/' });
 }
 
 class walletManager {
@@ -364,6 +362,33 @@ class walletManager {
     }
     async getMyDeposit(){
         return await _api.authConnect().canister(config.CANISTER_MANAGER_ID).my_deposits();
+    }
+    async getCycleHistory(){
+        return await _api.authConnect().canister(config.CANISTER_MANAGER_ID).cycles_history();
+    }
+    async logout(){
+        window.Swal.fire({
+            icon: 'question',
+            text: 'Are you sure you want to logout?',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Log me out!',
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                localStorage.removeItem("_w_connected");
+                localStorage.removeItem("_account_index");
+                StoicIdentity.disconnect();
+                walletData.setIdentity(false);
+                walletData.setAccount([]);
+                walletData.setBalance(0);
+                walletData.setLoginState(false);
+                walletData.setCurrentAccount({});
+                walletData.setCanicLockedBalance(0);
+                walletData.logoutAction();
+            }
+        })
+    }
+    btnLogin() {
+        EventBus.emit("showLoginModal", true);
     }
 }
 

@@ -8,12 +8,12 @@ import {principalToText, canisterStatus} from "../IC/utils";
 
 const getMetaData = async (canisterId, standard) =>{
     switch (standard) {
-        case "ICRC-1": return getICRC1Metadata(canisterId);break;
+        case "ICRC1": return getICRC1Metadata(canisterId);break;
         case "DIP20": return getDIP20Metadata(canisterId);break
     }
 };
 const balance = async(standard, canisterId)=>{
-    if(standard == 'ICRC-1'){
+    if(standard == 'ICRC1'){
         return await _api.connect().canister(canisterId, standard).icrc1_balance_of(
             {
                 owner: walletData.principal.getPrincipal(),
@@ -25,7 +25,7 @@ const balance = async(standard, canisterId)=>{
     }
 }
 const transfer = async(standard, canisterId, to, amount)=>{
-    if(standard == 'ICRC-1'){
+    if(standard == 'ICRC1'){
         let transferArgs = {
             amount: amount*config.E8S,
             created_at_time: [],
@@ -50,9 +50,9 @@ const burn = async(standard, canisterId, amount)=>{
     return await _api.authConnect().canister(canisterId, standard).burn(amount*config.E8S);
 }
 const getICRC1Metadata = async (canisterId)=>{
-    let _data = await _api.connect().canister(canisterId, 'ICRC-1').icrc1_metadata();
-    let _owner = await _api.connect().canister(canisterId, 'ICRC-1').icrc1_minting_account();
-    let _totalSupply = await _api.connect().canister(canisterId, 'ICRC-1').icrc1_total_supply();
+    let _data = await _api.connect().canister(canisterId, 'ICRC1').icrc1_metadata();
+    let _owner = await _api.connect().canister(canisterId, 'ICRC1').icrc1_minting_account();
+    let _totalSupply = await _api.connect().canister(canisterId, 'ICRC1').icrc1_total_supply();
     let _result = {
         'total_supply': Number(_totalSupply),
         'logo': '',

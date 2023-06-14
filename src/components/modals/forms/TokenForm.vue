@@ -23,7 +23,7 @@
 <template>
     <div class="pl-10 pb-3">
         <div class="row gy-4">
-            <input type="hidden" name="token_standard" value="ICRC-1">
+            <input type="hidden" name="token_standard" value="ICRC1">
             <div class="col-sm-6">
                 <div class="form-group">
                     <label class="form-label" for="tokenName">Token Name <IconRequired /></label>

@@ -124,6 +124,7 @@
                             html: '<p>Your canister successfully deployed.</p><p>Manage your canister: <a href="/my-canister/'+targetCanister+'">'+targetCanister+'</a></p><p>View on ICScan: <a href="'+config.IC_SCAN+targetCanister+'" target="_blank">'+targetCanister+'</a> <em class="icon ni ni-external"></em>',
                         })
                         await this.getMyCanister();//Reload my canister
+                        await this.refreshBalance();//Reload my balance
                     }else{
                         window.Swal.fire({
                             icon: 'error',
@@ -267,7 +268,7 @@
                             </div>
                         </div>
                         <hr class="preview-hr mb-3 mt-3">
-                        <TokenForm v-if="canisterImage.code =='ICRC-1'"></TokenForm>
+                        <TokenForm v-if="canisterImage.code =='ICRC1'"></TokenForm>
                         <DIP20Form v-if="canisterImage.code =='DIP20'"></DIP20Form>
                         <NftForm v-else-if="canisterImage.code == 'EXT-NFT'"></NftForm>
                         <ThresholdForm v-else-if="canisterImage.code == 'Threshold'"></ThresholdForm>

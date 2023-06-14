@@ -9,4 +9,7 @@ export default {
     showCardModal: (obj)=>{
         EventBus.emit('showCardModal', obj)
     },
+    showImageModal: (obj)=>{
+        EventBus.emit('showImageModal', obj)
+    },
 }

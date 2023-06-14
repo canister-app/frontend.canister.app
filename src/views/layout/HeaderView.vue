@@ -1,12 +1,10 @@
-import {walletData} from "../../services/store";
 <script setup>
-    import { walletData } from "@/services/store.js";
-    import {StoicIdentity} from "ic-stoic-identity";
-    import router from "../../router";
-    import {principalToAccountIdentifier, formatICP, rosettaApi} from "../../IC/utils";
+    import {walletData} from "../../services/store";
+    import { shortPrincipal } from "@/IC/utils";
     import EventBus from "../../services/EventBus";
+    import {WalletManager} from "../../services/WalletManager";
     function btnLogin() {
-        EventBus.emit("showLoginModal", true);
+        WalletManager.btnLogin()
     }
     function btnShowSetting(){
         EventBus.emit("showModalSetting", true);
@@ -16,26 +14,7 @@ import {walletData} from "../../services/store";
         EventBus.emit("showLoginModal", true);
     }
     function btnLogout(){
-        window.Swal.fire({
-            icon: 'question',
-            text: 'Are you sure you want to logout?',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, Log me out!',
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                localStorage.removeItem("_w_connected");
-                localStorage.removeItem("_account_index");
-                StoicIdentity.disconnect();
-                walletData.setIdentity(false);
-                walletData.setAccount([]);
-                walletData.setBalance(0);
-                walletData.setLoginState(false);
-                walletData.setCurrentAccount({});
-                walletData.setCanicLockedBalance(0);
-                walletData.logoutAction();
-                router.push({ path: '/' });
-            }
-        })
+        WalletManager.logout();
     }
 </script>
 <template>
@@ -124,7 +103,7 @@ import {walletData} from "../../services/store";
                                                 <em class="icon icon-circle bg-primary-dim ni ni-share"></em>
                                             </div>
                                             <div class="nk-notification-content">
-                                                <div class="nk-notification-text">Canister <span>ICRC-1</span> created.</div>
+                                                <div class="nk-notification-text">Canister <span>ICRC1</span> created.</div>
                                                 <div class="nk-notification-time">Just now</div>
                                             </div>
                                         </div>
@@ -168,70 +147,59 @@ import {walletData} from "../../services/store";
                             </a>
                             <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
                                 <div class="dropdown-body">
-                                    <ul class="list-apps">
-                                        <li>
-                                            <a href="html/index.html">
-                                                <span class="list-apps-media"><em class="icon ni ni-dashlite bg-primary text-white"></em></span>
-                                                <span class="list-apps-title">Dashboard</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="html/apps/chats.html">
-                                                <span class="list-apps-media"><em class="icon ni ni-chat-circle bg-info-dim"></em></span>
-                                                <span class="list-apps-title">Chats</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="html/apps/mailbox.html">
-                                                <span class="list-apps-media"><em class="icon ni ni-inbox bg-purple-dim"></em></span>
-                                                <span class="list-apps-title">Mailbox</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="html/apps/messages.html">
-                                                <span class="list-apps-media"><em class="icon ni ni-chat bg-success-dim"></em></span>
-                                                <span class="list-apps-title">Messages</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="html/apps/file-manager.html">
-                                                <span class="list-apps-media"><em class="icon ni ni-folder bg-purple-dim"></em></span>
-                                                <span class="list-apps-title">File Manager</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="html/components.html">
-                                                <span class="list-apps-media"><em class="icon ni ni-layers bg-secondary-dim"></em></span>
-                                                <span class="list-apps-title">Components</span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                    <ul class="list-apps">
-                                        <li>
-                                            <a href="/demo2/ecommerce/index.html">
-                                                <span class="list-apps-media"><em class="icon ni ni-cart bg-danger-dim"></em></span>
-                                                <span class="list-apps-title">Ecommerce Panel</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="/demo4/subscription/index.html">
-                                                <span class="list-apps-media"><em class="icon ni ni-calendar-booking bg-primary-dim"></em></span>
-                                                <span class="list-apps-title">Subscription Panel</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="/demo5/crypto/index.html">
-                                                <span class="list-apps-media"><em class="icon ni ni-bitcoin-cash bg-warning-dim"></em></span>
-                                                <span class="list-apps-title">Crypto Wallet Panel</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="/demo6/invest/index.html">
-                                                <span class="list-apps-media"><em class="icon ni ni-invest bg-blue-dim"></em></span>
-                                                <span class="list-apps-title">HYIP Invest Panel</span>
-                                            </a>
-                                        </li>
-                                    </ul>
+<!--                                    <ul class="list-apps">-->
+<!--                                        <li>-->
+<!--                                            <a href="html/index.html">-->
+<!--                                                <span class="list-apps-media"><em class="icon ni ni-dashlite bg-primary text-white"></em></span>-->
+<!--                                                <span class="list-apps-title">Dashboard</span>-->
+<!--                                            </a>-->
+<!--                                        </li>-->
+<!--                                        <li>-->
+<!--                                            <a href="html/apps/chats.html">-->
+<!--                                                <span class="list-apps-media"><em class="icon ni ni-chat-circle bg-info-dim"></em></span>-->
+<!--                                                <span class="list-apps-title">Chats</span>-->
+<!--                                            </a>-->
+<!--                                        </li>-->
+<!--                                        <li>-->
+<!--                                            <a href="html/apps/mailbox.html">-->
+<!--                                                <span class="list-apps-media"><em class="icon ni ni-inbox bg-purple-dim"></em></span>-->
+<!--                                                <span class="list-apps-title">Mailbox</span>-->
+<!--                                            </a>-->
+<!--                                        </li>-->
+<!--                                        <li>-->
+<!--                                            <a href="html/apps/messages.html">-->
+<!--                                                <span class="list-apps-media"><em class="icon ni ni-chat bg-success-dim"></em></span>-->
+<!--                                                <span class="list-apps-title">Messages</span>-->
+<!--                                            </a>-->
+<!--                                        </li>-->
+<!--                                        <li>-->
+<!--                                            <a href="html/apps/file-manager.html">-->
+<!--                                                <span class="list-apps-media"><em class="icon ni ni-folder bg-purple-dim"></em></span>-->
+<!--                                                <span class="list-apps-title">File Manager</span>-->
+<!--                                            </a>-->
+<!--                                        </li>-->
+<!--                                        <li>-->
+<!--                                            <a href="html/components.html">-->
+<!--                                                <span class="list-apps-media"><em class="icon ni ni-layers bg-secondary-dim"></em></span>-->
+<!--                                                <span class="list-apps-title">Components</span>-->
+<!--                                            </a>-->
+<!--                                        </li>-->
+<!--                                    </ul>-->
+<!--                                    <ul class="list-apps">-->
+<!--                                        <li>-->
+<!--                                            <a href="/demo2/ecommerce/index.html">-->
+<!--                                                <span class="list-apps-media"><em class="icon ni ni-cart bg-danger-dim"></em></span>-->
+<!--                                                <span class="list-apps-title">Ecommerce Panel</span>-->
+<!--                                            </a>-->
+<!--                                        </li>-->
+<!--                                        <li>-->
+<!--                                            <a href="/demo4/subscription/index.html">-->
+<!--                                                <span class="list-apps-media"><em class="icon ni ni-calendar-booking bg-primary-dim"></em></span>-->
+<!--                                                <span class="list-apps-title">Subscription Panel</span>-->
+<!--                                            </a>-->
+<!--                                        </li>-->
+<!--                                       -->
+<!--                                    </ul>-->
                                 </div><!-- .nk-dropdown-body -->
                             </div>
                         </li>
@@ -256,7 +224,7 @@ import {walletData} from "../../services/store";
                                         </div>
                                         <div class="user-info">
                                             <span class="lead-text">{{walletData.account.name}}</span>
-                                            <span class="sub-text"> {{walletData.txtPrincipal.slice(0,10)+'...'+walletData.txtPrincipal.slice(-10)}}</span>
+                                            <span class="sub-text"> {{shortPrincipal(walletData.txtPrincipal)}}</span>
                                         </div>
                                     </div>
                                 </div>

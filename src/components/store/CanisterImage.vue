@@ -40,10 +40,16 @@
             </h6>
 
             <div class="d-flex flex-row">
-                <div class="w-30 h-40 bg-light image-code" :style="bgGradien">
+                <div class="w-30 h-40 bg-light image-code">
                     <router-link :to="`/store/${Number(image.image_id)}-${image.code}`">
-                        <p>{{image.code}}</p>
-                    </router-link></div>
+                        <img :src="image.thumbnail" class="canister-thumbnail"/>
+                    </router-link>
+                </div>
+<!--                <div class="w-30 h-40 bg-light image-code" :style="bgGradien">-->
+<!--                    <router-link :to="`/store/${Number(image.image_id)}-${image.code}`">-->
+<!--                        <p>{{image.code}}</p>-->
+<!--                    </router-link>-->
+<!--                </div>-->
                 <div class="p-2 w-70">
                     <div class="sub-text text-ellipsis h-40">{{image.brief}}</div>
                     <div class="rating-wrap my-1">
@@ -74,5 +80,8 @@
         color: #ffffff;
         text-transform: uppercase;
         text-align: center;
+    }
+    .canister-thumbnail{
+        border-radius: 5px;
     }
 </style>

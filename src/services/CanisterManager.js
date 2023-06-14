@@ -67,7 +67,7 @@ const toBase64 = file => new Promise((resolve, reject) => {
 const createInitParams = async(formData)=>{
     let _args;
     switch (formData.token_standard) {
-        case "ICRC-1":
+        case "ICRC1":
             const Value = IDL.Variant({
                 'Int' : IDL.Int,
                 'Nat' : IDL.Nat,
@@ -209,13 +209,13 @@ const getCanister = async (canisterId)=>{
 };
 
 const getCanisterStatus = async (canisterId)=>{
-    return await _api.authConnect().canister(config.CANISTER_IC_MANAGEMENT).canister_status({canister_id: textToPrincipal(canisterId)});
-    // let _canisterDetail= await _api.authConnect().canister(config.CANISTER_MANAGER_ID).get_canister_status(textToPrincipal(canisterId));
-    // if (Object.prototype.hasOwnProperty.call(_canisterDetail,"ok")){
-    //     return _canisterDetail.ok;
-    // }else{
-    //     return null;
-    // }
+    // return await _api.authConnect().canister(config.CANISTER_IC_MANAGEMENT).canister_status({canister_id: textToPrincipal(canisterId)});
+    let _canisterDetail= await _api.authConnect().canister(config.CANISTER_MANAGER_ID).get_canister_status(textToPrincipal(canisterId));
+    if (Object.prototype.hasOwnProperty.call(_canisterDetail,"ok")){
+        return _canisterDetail.ok;
+    }else{
+        return null;
+    }
 };
 const getCanisterHistory = async (canisterId)=>{
     let _history= await _api.authConnect().canister(config.CANISTER_MANAGER_ID).get_canister_history(textToPrincipal(canisterId));

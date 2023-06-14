@@ -178,9 +178,9 @@
                     </div>
                 </div>
             </div>
-            <div class="col-sm-12" v-if="standard=='ICRC-1'">
+            <div class="col-sm-12" v-if="standard=='ICRC1'">
                 <div class="alert alert-warning alert-icon">
-                    <em class="icon ni ni-alert-circle"></em> With the ICRC-1 standard, the  <strong>transfer</strong> action is equivalent to <strong>minting</strong> token for another principal. If you are the owner of the Token, you cannot transfer (mint) to yourself.
+                    <em class="icon ni ni-alert-circle"></em> With the ICRC1 standard, the  <strong>transfer</strong> action is equivalent to <strong>minting</strong> token for another principal. If you are the owner of the Token, you cannot transfer (mint) to yourself.
                 </div>
             </div>
             <div class="col-sm-12 text-center">

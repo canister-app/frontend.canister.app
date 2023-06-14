@@ -4,12 +4,17 @@
   import moment from "moment";
   import config from "@/config"
   import IconICP from "@/components/icons/IconICP.vue";
+  import {formatCurrency} from "../IC/utils";
+  import IconCopy from "../components/icons/IconCopy.vue";
+  import {walletData} from "../services/store";
   export default {
-    components: { IconICP  },
+    components: {IconCopy, IconICP },
     data(){
       return {
           pairs: null,
           config,
+          formatCurrency,
+          walletData,
           counter: 60,
           update_interval: null,
           counter_interval: null
@@ -17,6 +22,29 @@
     },
     methods: {
         async getPairs(){
+            let _pairs = await _api.connect().canister('4qix3-5iaaa-aaaag-qbljq-cai').getAllToken([]);
+            console.log('all Token: ', _pairs);
+            let _newPairs = [];
+            _pairs.forEach(function(pair){
+                let _tokenInfo = {
+                    canisterId: pair.address,
+                    standard: pair.standard,
+                    token0: pair.name,
+                    token1: pair.name,
+                    name: pair.name,
+                    volume: pair.totalVolumeUSD,
+                    swapCount: pair.txCount,
+                    price: pair.name=='ICP'?walletData.icpPrice:Number(pair.priceUSD),
+                    score: 1,
+                    updated: '',
+                    change24h: pair.priceUSDChange
+                };
+                _newPairs.push(_tokenInfo)
+            })
+            this.pairs = _newPairs.sort( function ( a, b ) { return Number(b.volume) - Number(a.volume); } );
+
+        },
+        async getICPSwap(){
             let _pairs = await _api.connect().canister('j4d4d-pqaaa-aaaak-aanxq-cai').getPairs2([], [], [], []);
             console.log('_pairs: ', _pairs);
             let _newPairs = [];
@@ -28,11 +56,12 @@
                     token0: pair[1].pair.token0[1],
                     token1: pair[1].pair.token1[1],
                     name: pair[1].pair.token0[1],
-                    volume: pair[1].liquidity[0].vol,
+                    volume: pair[1].liquidity[0].vol.value0,
                     swapCount: pair[1].liquidity[0].swapCount,
                     price: Number(pair[1].liquidity[0].value1)/Number(pair[1].liquidity[0].value0),
                     score: pair[1].score,
-                    updated: moment.utc().fromNow(Number(pair[1].liquidity[0].priceWeighted.updateTime))
+                    updated: moment.utc().fromNow(Number(pair[1].liquidity[0].priceWeighted.updateTime)),
+                    change24h: 0
                 };
                 if(_tokenInfo.name == "ITest" || _tokenInfo.name == 'Cycles'){
                 }else{
@@ -43,9 +72,14 @@
             this.pairs = _newPairs;
             console.log('_newPairs: ', _newPairs);
         },
+        async getRateICP(){
+          await walletData.getRateICP();
+          console.log("ICP Price:", walletData.icpPrice)
+        },
         setInterval(){
             this.update_interval = setInterval(()=>{
                 this.getPairs();
+                this.getRateICP();
                 this.counter = 60;
             }, 60*1000)
             this.counter_interval = setInterval(this.incrementSeconds, 1000)
@@ -57,6 +91,7 @@
     mounted() {
         this.setInterval();
         this.getPairs();
+        this.getRateICP();
     },
     unmounted() {
       console.log("Stopping the interval timer")
@@ -100,7 +135,7 @@
                                         <div class="card-title-group">
                                             <div class="card-title">
                                                 <h6 class="title"><span class="me-2">Canister Tokens</span>
-                                                    <a href="#" class="link d-none d-sm-inline">See History</a>
+                                                    <a href="javascript:void(0)" @click="getICPSwap" class="link d-none d-sm-inline">See History</a>
 
                                                 </h6>
                                             </div>
@@ -122,12 +157,11 @@
                                                 <div class="nk-tb-col nk-tb-orders-type"></div>
                                                 <div class="nk-tb-col"><span>Name</span></div>
                                                 <div class="nk-tb-col text-end"><span>Price</span></div>
-                                                <div class="nk-tb-col "><span>24h % change</span></div>
-                                                <div class="nk-tb-col text-end"><span>Marketcap</span></div>
+                                                <div class="nk-tb-col text-center"><span>Price change</span></div>
+                                                <div class="nk-tb-col tb-col-sm text-end"><span>Volume 24h</span></div>
                                                 <div class="nk-tb-col tb-col-sm text-end"><span>Volume</span></div>
-                                                <div class="nk-tb-col tb-col-sm"><span>Canister ID</span></div>
-                                                <div class="nk-tb-col tb-col-xxl"><span>Swap count</span></div>
-                                                <div class="nk-tb-col text-end"><span>Last 7 days</span></div>
+                                                <div class="nk-tb-col tb-col-sm text-end "><span>Marketcap</span></div>
+                                                <div class="nk-tb-col text-center"><span>Chart</span></div>
                                             </div><!-- .nk-tb-item -->
                                             <div class="nk-tb-item" v-for="(pair, idx) in pairs">
                                                 <div class="nk-tb-col">
@@ -135,35 +169,43 @@
                                                 </div>
                                                 <div class="nk-tb-col nk-tb-orders-type">
                                                     <ul class="icon-overlap">
-                                                        <li class="w-40px"><em class="bg-primary-dim icon-circle icon ni ni-info"></em></li>
+                                                        <li class="w-40px">
+                                                            <img :src="`https://${config.CANISTER_STORAGE_ID}.raw.icp0.io/${pair.canisterId}.png`" />
+<!--                                                            <em class="bg-primary-dim icon-circle icon ni ni-info"></em>-->
+                                                        </li>
                                                     </ul>
                                                 </div>
                                                 <div class="nk-tb-col">
                                                     <span class="tb-lead">{{pair.name}} &nbsp;<span class="badge bg-light text-uppercase">{{pair.standard}}</span></span>
+                                                    <span class="tb-sub">{{pair.canisterId}} <IconCopy :text="pair.canisterId" /></span>
                                                 </div>
                                                 <div class="nk-tb-col text-right">
-                                                    <span class="tb-amount">${{(Number(pair.price)*4.12).toFixed(2)}}</span>
-                                                    <span class="tb-amount-sm">{{(pair.price).toFixed(4)}} ICP</span>
+                                                    <span class="tb-amount">${{formatCurrency((Number(pair.price)).toFixed(6), false)}}</span>
+                                                    <span class="tb-amount-sm">{{formatCurrency((pair.price/walletData.icpPrice).toFixed(4), false)}} ICP</span>
                                                 </div>
-                                                <div class="nk-tb-col">
-                                                    <span class="tb-sub">---%</span>
+                                                <div class="nk-tb-col text-center">
+                                                    <span :class="`tb-sub ${pair.change24h>0?'text-success':pair.change24h<0?'text-danger':''}`">
+                                                        <em class="ni ni-arrow-up fw-bold" v-if="pair.change24h>0"></em>
+                                                        <em class="ni ni-arrow-down fw-bold" v-if="pair.change24h <0"></em>
+                                                        {{pair.change24h.toFixed(2)}}%
+                                                    </span>
                                                 </div>
 
-                                                <div class="nk-tb-col text-end">
-                                                    <span class="tb-sub">{{(Number(pair.volume.value1)/config.E8S).toFixed(4)}} <span>ICP</span></span>
-                                                </div>
+
                                                 <div class="nk-tb-col tb-col-xl text-end">
-                                                    <span class="tb-sub">{{(Number(pair.volume.value1)/config.E8S).toFixed(4)}} <span>ICP</span></span>
+                                                    <span class="tb-amount">{{formatCurrency((Number(pair.volume)).toFixed(0), false)}} <span>ICP</span></span>
                                                 </div>
-                                               <div class="nk-tb-col tb-col-sm">
-                                                    <span class="tb-sub">{{pair.canisterId}}</span>
+                                                <div class="nk-tb-col text-end">
+                                                    <span class="tb-amount">{{formatCurrency((Number(pair.volume)).toFixed(4), true)}} <span>ICP</span></span>
+                                                </div>
+                                               <div class="nk-tb-col text-end">
+                                                   <span class="tb-sub">{{formatCurrency((Number(pair.volume)).toFixed(4), true)}} <span>ICP</span></span>
                                                 </div>
 
-                                                <div class="nk-tb-col tb-col-sm text-end">
-                                                    <span class="tb-sub tb-amount">{{(Number(pair.volume.value1)/config.E8S).toFixed(4)}} <span>ICP</span></span>
-                                                </div>
-                                                <div class="nk-tb-col ">
-                                                    <span class="tb-sub tb-amount ">---</span>
+                                                <div class="nk-tb-col text-center">
+                                                    <div class="gfx mini-chart" data-color="#9cabff">
+                                                        <img src="https://s3.coinmarketcap.com/generated/sparklines/web/7d/2781/8916.svg">
+                                                    </div>
                                                 </div>
                                             </div><!-- .nk-tb-item -->
                                         </div>
@@ -273,3 +315,10 @@
         </div>
     <!-- content @e -->
 </template>
+<style>
+    .mini-chart{
+        /*border: 1px solid #dbdfea;*/
+        padding: 3px;
+        width: 100px;
+    }
+</style>
