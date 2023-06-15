@@ -355,6 +355,13 @@ class walletManager {
 
         }
     }
+    async getSettings(){
+        let _settings = await _api.connect().canister(config.CANISTER_MANAGER_ID).settings();
+        console.log('_settings: ', _settings)
+        walletData.setCycleRate(Number(_settings.cycle_rate)/config.CYCLES);
+        walletData.setCanisterPrice(Number(_settings.canister_price)/config.CYCLES);
+        walletData.setCanisterLimit(_settings.canister_limit);
+    }
     async getCycleRate(){
         let rate = await _api.connect().canister(config.CANISTER_CYCLE_MINTING).get_icp_xdr_conversion_rate();
         let _icpRate = Number(rate.data.xdr_permyriad_per_icp)/10_000;

@@ -17,6 +17,7 @@
     import { format, unformat } from 'v-money3';
     import ModalManager from "../../services/ModalManager";
     import {WalletManager} from "../../services/WalletManager";
+    import Balance from "../Balance.vue";
     const mask_option =  {
         decimal: ".",
         thousands: ",",
@@ -34,7 +35,7 @@
         masked: false /* doesn't work with directive */,
     };
     export default {
-        components: { VueFinalModal, DIP20Form, TokenForm, NftForm, ThresholdForm, AxonForm, IconRequired },
+        components: { VueFinalModal, DIP20Form, TokenForm, NftForm, ThresholdForm, AxonForm, IconRequired, Balance },
         data() {
             return {
                 config,
@@ -48,12 +49,7 @@
             }
         },
         methods: {
-            showDepositModal(){
-                ModalManager.showDeposit(true);
-            },
-            async refreshBalance(){
-                await walletData.getBalance();
-            },
+
             async handleDeploy(e){
                 console.log('this.canisterSelected', this.canisterSelected)
                 const targetCanister = this.canisterSelected.canister
@@ -124,7 +120,7 @@
                             html: '<p>Your canister successfully deployed.</p><p>Manage your canister: <a href="/my-canister/'+targetCanister+'">'+targetCanister+'</a></p><p>View on ICScan: <a href="'+config.IC_SCAN+targetCanister+'" target="_blank">'+targetCanister+'</a> <em class="icon ni ni-external"></em>',
                         })
                         await this.getMyCanister();//Reload my canister
-                        await this.refreshBalance();//Reload my balance
+                        // await this.refreshBalance();//Reload my balance
                     }else{
                         window.Swal.fire({
                             icon: 'error',
@@ -148,7 +144,7 @@
                 let _myCanisters = await CanisterManager.getMyCanister();
                 let _init = [
                     { canisterId: "-1", canisterLabel: "Request new Canister", heading: true, style: 'text-primary' },
-                    { canisterId: "0", heading: false, canisterLabel: "Install to new canister (initialization fee will apply)" },
+                    { canisterId: "0", heading: false, canisterLabel: "Install to new canister (initialization cycles: "+walletData.canisterPrice+"T)" },
                     { canisterId: "-1", canisterLabel: "Or Re-Install to existed Canister - Becareful!!!", heading: true, style: 'text-danger'}
                 ]
                 _myCanisters.forEach( cani =>{
@@ -242,27 +238,7 @@
                             <div class="row pt-1" v-else>
                                 <div class="col-sm-12">
                                     <div class="alert alert-fill alert-light p-1">
-                                        <ul class="preview-list">
-                                            <li class="preview-item">
-                                                <em class="icon ni ni-wallet"></em> <small>Your Balance:</small>
-                                            </li>
-                                            <li class="preview-item">
-                                                <span class="badge badge-dot bg-primary">{{Number(walletData?.balance)/config.E8S||"-"}} ICP</span>
-                                            </li>
-                                            <li class="preview-item">
-                                                <span class="badge badge-dot bg-danger">
-                                                    {{(Number(walletData?.cycleBalance)/config.CYCLES).toFixed(3)}} T Cycles
-                                                </span>
-                                                 <small> &nbsp; <a href="javascript:void(0)" @click="showDepositModal"><em class="icon ni ni-plus-c"></em> Deposit</a></small>
-                                            </li>
-                                            <li class="preview-item">
-
-                                            </li>
-                                            <li class="preview-item">
-                                                <small><a href="javascript:void(0)" @click="refreshBalance"><em class="ni ni-reload"></em> Refresh</a> </small>
-                                            </li>
-
-                                        </ul>
+                                        <Balance />
                                     </div>
                                 </div>
                             </div>

@@ -38,6 +38,7 @@
     created() {
       //Init
       WalletManager.checkLoginStatus();
+      WalletManager.getSettings();
 
     },
   }

@@ -33,6 +33,8 @@ export const walletData = reactive({
     icpRate: 0,
     icpPrice: 0,
     cycleRate: 3.5127,
+    canisterPrice: 0,
+    canisterLimit: 0,
     setIdentity(principal){
         this.principal = principal;
         if(principal){
@@ -69,7 +71,7 @@ export const walletData = reactive({
         // this.getXcanicBalance();
         // this.updateAccountPrincipal();
         //Cycles check!!!!!!!!!!
-        await WalletManager.getCycleRate()
+        // await WalletManager.getCycleRate()
         await WalletManager.getCycleBalance()
     },
     logoutAction(){
@@ -108,7 +110,13 @@ export const walletData = reactive({
         this.account_verified = status;
     },
     setModalVisible(status){
-        this.isModalVisible = status
+        this.isModalVisible = status;
+    },
+    setCanisterPrice(price){
+        this.canisterPrice = price;
+    },
+    setCanisterLimit(limit){
+        this.canisterLimit = limit;
     },
     async getBalance() {
         if(this?.account?.address){

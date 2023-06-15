@@ -21,12 +21,12 @@ export default ({ IDL }) => {
         'time' : Time,
         'amount' : IDL.Nat,
     });
+    const Result_4 = IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text });
     const DepositPing = IDL.Record({
         'to_account' : IDL.Text,
         'from_account' : IDL.Text,
         'amount' : IDL.Nat64,
     });
-    const Result_4 = IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text });
     const CanisterInfo = IDL.Record({
         'status' : IDL.Nat,
         'created' : Time,
@@ -123,6 +123,12 @@ export default ({ IDL }) => {
         'cycle_balance' : IDL.Nat,
         'account' : IDL.Text,
     });
+    const InitResponse = IDL.Record({
+        'min_deposit' : IDL.Nat64,
+        'cycle_rate' : IDL.Nat,
+        'canister_limit' : IDL.Nat,
+        'canister_price' : IDL.Nat,
+    });
     const Payment = IDL.Record({
         'to' : IDL.Principal,
         'from' : IDL.Principal,
@@ -130,7 +136,7 @@ export default ({ IDL }) => {
         'txId' : IDL.Nat,
         'amount' : IDL.Nat,
     });
-    const anon_class_37_1 = IDL.Service({
+    const anon_class_40_1 = IDL.Service({
         'add_canister_image' : IDL.Func([CanisterImageInit], [], []),
         'burnRate' : IDL.Func([], [IDL.Nat], ['query']),
         'canister_action' : IDL.Func([canister_id, IDL.Text], [Result_3], []),
@@ -146,8 +152,10 @@ export default ({ IDL }) => {
             [IDL.Vec(IDL.Tuple(IDL.Nat, CyclesTransaction))],
             ['query'],
         ),
+        'cycles_rate' : IDL.Func([], [IDL.Nat], ['query']),
         'cycles_withdraw' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
         'delete_templates' : IDL.Func([IDL.Nat], [Result_3], []),
+        'deposit_notify' : IDL.Func([IDL.Nat], [Result_4], []),
         'deposit_ping' : IDL.Func([DepositPing], [Result_4], []),
         'deposit_process' : IDL.Func([IDL.Nat], [Result_4], []),
         'edit_canister_image' : IDL.Func(
@@ -193,6 +201,7 @@ export default ({ IDL }) => {
         'setLimitCanister' : IDL.Func([IDL.Nat], [], []),
         'setPrice' : IDL.Func([IDL.Nat], [], []),
         'setSystemEnabled' : IDL.Func([IDL.Bool], [], []),
+        'settings' : IDL.Func([], [InitResponse], ['query']),
         'transactions' : IDL.Func(
             [],
             [IDL.Vec(IDL.Tuple(IDL.Nat, Payment))],
@@ -203,6 +212,6 @@ export default ({ IDL }) => {
         'wallet_receive' : IDL.Func([], [], []),
         'whoami' : IDL.Func([], [IDL.Principal], []),
     });
-    return anon_class_37_1;
+    return anon_class_40_1;
 };
 export const init = ({ IDL }) => { return []; };

@@ -6,9 +6,10 @@
   import IconICP from "@/components/icons/IconICP.vue";
   import {formatCurrency} from "../IC/utils";
   import IconCopy from "../components/icons/IconCopy.vue";
+  import IconLoading from "../components/icons/IconLoading.vue";
   import {walletData} from "../services/store";
   export default {
-    components: {IconCopy, IconICP },
+    components: {IconCopy, IconICP, IconLoading },
     data(){
       return {
           pairs: null,
@@ -17,13 +18,15 @@
           walletData,
           counter: 60,
           update_interval: null,
-          counter_interval: null
+          counter_interval: null,
+          isLoading: false,
+          autoReload: true,
       }
     },
     methods: {
         async getPairs(){
+            this.isLoading = true;
             let _pairs = await _api.connect().canister('4qix3-5iaaa-aaaag-qbljq-cai').getAllToken([]);
-            console.log('all Token: ', _pairs);
             let _newPairs = [];
             _pairs.forEach(function(pair){
                 let _tokenInfo = {
@@ -42,11 +45,10 @@
                 _newPairs.push(_tokenInfo)
             })
             this.pairs = _newPairs.sort( function ( a, b ) { return Number(b.volume) - Number(a.volume); } );
-
+            this.isLoading = false;
         },
         async getICPSwap(){
             let _pairs = await _api.connect().canister('j4d4d-pqaaa-aaaak-aanxq-cai').getPairs2([], [], [], []);
-            console.log('_pairs: ', _pairs);
             let _newPairs = [];
             _pairs.data.forEach(function(pair){
                 let _standard = Object.keys(pair[1].pair.token0[2]);
@@ -70,11 +72,9 @@
 
             })
             this.pairs = _newPairs;
-            console.log('_newPairs: ', _newPairs);
         },
         async getRateICP(){
           await walletData.getRateICP();
-          console.log("ICP Price:", walletData.icpPrice)
         },
         setInterval(){
             this.update_interval = setInterval(()=>{
@@ -87,6 +87,18 @@
         incrementSeconds() {
             this.counter -= 1;
         },
+        toggleReload(){
+            this.autoReload = !this.autoReload;
+            if(this.autoReload){
+                this.setInterval();
+            }else{
+                this.clearInterval();
+            }
+        },
+        clearInterval(){
+            clearInterval(this.update_interval);
+            clearInterval(this.counter_interval);
+        }
     },
     mounted() {
         this.setInterval();
@@ -94,9 +106,7 @@
         this.getRateICP();
     },
     unmounted() {
-      console.log("Stopping the interval timer")
-      clearInterval(this.update_interval)
-      clearInterval(this.counter_interval)
+      this.clearInterval()
     }
   }
 </script>
@@ -135,12 +145,19 @@
                                         <div class="card-title-group">
                                             <div class="card-title">
                                                 <h6 class="title"><span class="me-2">Canister Tokens</span>
-                                                    <a href="javascript:void(0)" @click="getICPSwap" class="link d-none d-sm-inline">See History</a>
+                                                    <a href="javascript:void(0)" @click="getPairs" class="link d-none d-sm-inline"><em class="ni ni-reload"></em> Refresh</a>
 
                                                 </h6>
                                             </div>
                                             <div class="card-tools">
-                                                <small>Update after: {{counter}} seconds</small>
+                                                <small>
+                                                    Auto reload after: {{counter}} seconds
+                                                    [
+                                                    <a href="javascript:void(0)" @click="toggleReload">
+                                                        <span v-if="autoReload">disable</span>
+                                                        <span v-if="!autoReload">enable</span>
+                                                    </a>
+                                                    ]</small>
 <!--                                                <ul class="card-tools-nav">-->
 
 <!--                                                    <li><a href="#"><span>Buy</span></a></li>-->
@@ -163,7 +180,10 @@
                                                 <div class="nk-tb-col tb-col-sm text-end "><span>Marketcap</span></div>
                                                 <div class="nk-tb-col text-center"><span>Chart</span></div>
                                             </div><!-- .nk-tb-item -->
-                                            <div class="nk-tb-item" v-for="(pair, idx) in pairs">
+                                            <div class="nk-tb-item" v-if="isLoading">
+                                                <IconLoading /> Loading tokens...
+                                            </div>
+                                            <div class="nk-tb-item" v-else v-for="(pair, idx) in pairs">
                                                 <div class="nk-tb-col">
                                                     <span class="tb-sub">{{idx+1}}.</span>
                                                 </div>
@@ -180,8 +200,8 @@
                                                     <span class="tb-sub">{{pair.canisterId}} <IconCopy :text="pair.canisterId" /></span>
                                                 </div>
                                                 <div class="nk-tb-col text-right">
-                                                    <span class="tb-amount">${{formatCurrency((Number(pair.price)).toFixed(6), false)}}</span>
-                                                    <span class="tb-amount-sm">{{formatCurrency((pair.price/walletData.icpPrice).toFixed(4), false)}} ICP</span>
+                                                    <span class="tb-amount">{{formatCurrency((pair.price/walletData.icpPrice).toFixed(6), false)}} ICP</span>
+                                                    <span class="tb-amount-sm">${{formatCurrency((Number(pair.price)).toFixed(6), false)}}</span>
                                                 </div>
                                                 <div class="nk-tb-col text-center">
                                                     <span :class="`tb-sub ${pair.change24h>0?'text-success':pair.change24h<0?'text-danger':''}`">
@@ -239,15 +259,15 @@
                                                     </div>
                                                 </div><!-- .card-title-group -->
                                                 <div class="nk-coin-ovwg">
-                                                    <div class="nk-coin-ovwg-ck">
-                                                        <canvas class="coin-overview-chart" id="coinOverview"></canvas>
-                                                    </div>
+<!--                                                    <div class="nk-coin-ovwg-ck">-->
+<!--                                                        <canvas class="coin-overview-chart" id="coinOverview"></canvas>-->
+<!--                                                    </div>-->
                                                     <ul class="nk-coin-ovwg-legends">
-                                                        <li><span class="dot dot-lg sq" data-bg="#f98c45"></span><span>ckBTC</span></li>
-                                                        <li><span class="dot dot-lg sq" data-bg="#9cabff"></span><span>CHAT</span></li>
-                                                        <li><span class="dot dot-lg sq" data-bg="#8feac5"></span><span>SNS1</span></li>
-                                                        <li><span class="dot dot-lg sq" data-bg="#6b79c8"></span><span>OT</span></li>
-                                                        <li><span class="dot dot-lg sq" data-bg="#79f1dc"></span><span>OGY</span></li>
+                                                        <li><span class="dot dot-lg sq" data-bg="#f98c45" style="background: #f98c45"></span><span>ckBTC</span></li>
+                                                        <li><span class="dot dot-lg sq" data-bg="#9cabff" style="background: #9cabff"></span><span>CHAT</span></li>
+                                                        <li><span class="dot dot-lg sq" data-bg="#8feac5" style="background: #8feac5"></span><span>SNS1</span></li>
+                                                        <li><span class="dot dot-lg sq" data-bg="#6b79c8" style="background: #6b79c8"></span><span>OT</span></li>
+                                                        <li><span class="dot dot-lg sq" data-bg="#79f1dc" style="background: #79f1dc"></span><span>OGY</span></li>
                                                     </ul>
                                                 </div><!-- .nk-coin-ovwg -->
                                             </div><!-- .card-inner -->
